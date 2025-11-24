@@ -1,5 +1,7 @@
+import { DecimalPipe } from '@angular/common';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiarism-session';
 
 type CheckStatus = 'clean' | 'warning' | 'critical';
 
@@ -16,8 +18,35 @@ interface PlagiarismCheck {
   standalone: true,
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
+  imports: [DecimalPipe],
 })
 export class Dashboard {
+  ngOnInit() {
+    let x = 0,
+      y = 0;
+    let targetX = 0,
+      targetY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      targetX = e.clientX;
+      targetY = e.clientY;
+    });
+
+    const animate = () => {
+      x += (targetX - x) * 0.1;
+      y += (targetY - y) * 0.1;
+
+      const cat = document.getElementById('cat');
+      if (cat) {
+        cat.style.left = x + 'px';
+        cat.style.top = y + 'px';
+      }
+
+      requestAnimationFrame(animate);
+    };
+    animate();
+  }
+
   recentChecks: PlagiarismCheck[] = [
     {
       id: 1,
@@ -63,10 +92,18 @@ export class Dashboard {
     },
   ];
 
-  constructor(private router: Router) {}
-
   totalChecks = this.recentChecks.length;
   suspiciousCount = 4;
+
+  constructor(
+    private router: Router,
+    public session: PlagiarismSessionService, // <-- Service injizieren
+  ) {}
+
+  // live-View auf die Dateien im Service
+  get uploadedFiles(): UploadedTextFile[] {
+    return this.session.files;
+  }
 
   get avgSimilarity(): number {
     if (this.recentChecks.length === 0) {
@@ -79,7 +116,6 @@ export class Dashboard {
   }
 
   goToInput() {
-    // Navigation logic to go to the input page
     this.router.navigate(['/input']);
   }
 

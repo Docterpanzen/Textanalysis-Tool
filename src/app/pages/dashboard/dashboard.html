@@ -8,9 +8,9 @@
 
     <button
       (click)="goToInput()"
-      class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-sm font-medium"
+      class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-sm font-medium cursor-pointer"
     >
-      Neuen Text prüfen
+      Neue Texte hinzufügen
     </button>
   </header>
 
@@ -111,5 +111,82 @@
         Tipp: Füge später eine Detail-Ansicht für die einzelnen Prüfungen hinzu.
       </div>
     </div>
+  </section>
+  <!-- Main content: Recent checks -->
+  <section class="grid gap-6 lg:grid-cols-3">
+    <!-- ... dein bisheriger Code bleibt unverändert ... -->
+    <div
+      class="col-span-2 rounded-2xl border px-4 py-2 border-slate-800 hover:animate-pulse-glow hover:border-sky-500"
+    >
+      col Span 2
+    </div>
+    <div
+      class="rounded-2xl border px-4 py-2 border-slate-800 hover:animate-pulse-glow hover:border-sky-500"
+    >
+      <div
+        id="cat"
+        class="fixed w-12 h-12 pointer-events-none transition-transform -translate-x-1/2 -translate-y-1/2"
+      >
+        🐱
+      </div>
+      col Span 1
+    </div>
+  </section>
+
+  <!-- Neue Sektion: aktuell importierte Dateien -->
+  <section class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-sm font-medium text-slate-200">Aktuelle Uploads (Session)</h2>
+      <span class="text-xs text-slate-500"> {{ uploadedFiles.length }} Datei(en) </span>
+    </div>
+
+    @if (uploadedFiles.length === 0) {
+      <div class="flex md:grid-cols-3 items-center justify-center gap-4 py-6">
+        <p class="text-xs text-slate-500 col-span-2">
+          Noch keine Dateien hochgeladen. Wechsle zum Tab „Input“, um Dateien hinzuzufügen.
+        </p>
+        <button
+          (click)="goToInput()"
+          class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-sm font-medium cursor-pointer"
+        >
+          Neue Texte hinzufügen
+        </button>
+      </div>
+    } @else {
+      <ul class="divide-y divide-slate-800">
+        @for (item of uploadedFiles; track item.file.name) {
+          <li class="py-2 flex items-center justify-between">
+            <div class="min-w-0">
+              <p class="truncate text-sm text-slate-100">
+                {{ item.file.name }}
+              </p>
+              <p class="text-xs text-slate-500">
+                {{ item.file.size | number }} Bytes
+                @if (item.useCleaned) {
+                  <span
+                    class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+                  >
+                    bereinigt
+                  </span>
+                } @else {
+                  <span
+                    class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-slate-700/60 text-slate-200 border border-slate-600/80"
+                  >
+                    original
+                  </span>
+                }
+              </p>
+            </div>
+
+            <!-- Optional: kurz anzeigen, dass Inhalt existiert -->
+            @if (!item.isLoading && !item.error && item.content) {
+              <span class="text-[11px] text-slate-400 max-w-[180px] truncate">
+                {{ (item.cleanedContent || item.content)?.slice(0, 80) }}…
+              </span>
+            }
+          </li>
+        }
+      </ul>
+    }
   </section>
 </div>

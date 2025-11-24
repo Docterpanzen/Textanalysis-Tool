@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiarism-session';
 
@@ -6,6 +7,7 @@ import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiaris
   standalone: true,
   templateUrl: './input.html',
   styleUrl: './input.css',
+  imports: [CommonModule],
 })
 export class Input {
   errorMessage: string | null = null;
@@ -14,6 +16,8 @@ export class Input {
   debugMessage: string | null = null;
 
   files: UploadedTextFile[] = [];
+
+  isDragOver = false;
 
   constructor(private session: PlagiarismSessionService) {
     // hier holen wir uns NUR die Referenz auf das Service-Array
@@ -28,35 +32,32 @@ export class Input {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
 
-    const allowedExtensions = ['.txt', '.md', '.rtf', '.odt', '.pdf', '.doc', '.docx'];
-
-    const selectedFiles = Array.from(input.files).filter((file) => {
-      const lower = file.name.toLowerCase();
-      return allowedExtensions.some((ext) => lower.endsWith(ext));
-    });
-
-    selectedFiles.forEach((file) => {
-      const alreadyExists = this.files.some(
-        (f) =>
-          f.file.name === file.name &&
-          f.file.size === file.size &&
-          f.file.lastModified === file.lastModified,
-      );
-      if (alreadyExists) return;
-
-      const wrapper: UploadedTextFile = {
-        file,
-        content: '',
-        cleanedContent: '',
-        isLoading: true,
-        isOpen: false,
-        useCleaned: false,
-      };
-      this.files.push(wrapper); // ✅ wir mutieren das gemeinsame Array
-      this.loadFileContent(wrapper);
-    });
+    this.processFiles(Array.from(input.files));
 
     input.value = '';
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragOver = false;
+
+    const dt = event.dataTransfer;
+    if (!dt || !dt.files || dt.files.length === 0) return;
+
+    this.processFiles(Array.from(dt.files));
   }
 
   private loadFileContent(item: UploadedTextFile) {
@@ -121,6 +122,36 @@ export class Input {
       return item.cleanedContent;
     }
     return item.content ?? '';
+  }
+
+  private processFiles(files: File[]) {
+    const allowedExtensions = ['.txt', '.md', '.rtf', '.odt', '.pdf', '.doc', '.docx'];
+
+    const selectedFiles = files.filter((file) => {
+      const lower = file.name.toLowerCase();
+      return allowedExtensions.some((ext) => lower.endsWith(ext));
+    });
+
+    selectedFiles.forEach((file) => {
+      const alreadyExists = this.files.some(
+        (f) =>
+          f.file.name === file.name &&
+          f.file.size === file.size &&
+          f.file.lastModified === file.lastModified,
+      );
+      if (alreadyExists) return;
+
+      const wrapper: UploadedTextFile = {
+        file,
+        content: '',
+        cleanedContent: '',
+        isLoading: true,
+        isOpen: false,
+        useCleaned: false,
+      };
+      this.files.push(wrapper);
+      this.loadFileContent(wrapper);
+    });
   }
 
   removeFile(file: UploadedTextFile) {

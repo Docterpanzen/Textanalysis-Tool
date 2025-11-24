@@ -1,10 +1,10 @@
 // eslint.config.mjs
-import js from '@eslint/js';
-import tseslint from '@typescript-eslint/eslint-plugin';
-import tsparser from '@typescript-eslint/parser';
 import angular from '@angular-eslint/eslint-plugin';
 import angularTemplate from '@angular-eslint/eslint-plugin-template';
 import angularTemplateParser from '@angular-eslint/template-parser';
+import js from '@eslint/js';
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
 import prettier from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 
@@ -29,7 +29,7 @@ export default [
         sourceType: 'module',
         ecmaVersion: 2022,
         projectService: true,
-        tsconfigRootDir: new URL('./', import.meta.url),
+        //tsconfigRootDir: new URL('./', import.meta.url),
       },
     },
     plugins: {

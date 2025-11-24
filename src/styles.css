@@ -1,2 +1,42 @@
 /* You can add global styles to this file, and also import other style files */
 @import 'tailwindcss';
+
+@keyframes drop-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45); /* sky-400 */
+  }
+  50% {
+    box-shadow: 0 0 12px 4px rgba(56, 189, 248, 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.45);
+  }
+}
+
+.drop-pulse {
+  animation: drop-pulse 1s ease-in-out infinite;
+}
+
+@theme {
+  --animate-wiggle: wiggle 1s ease-in-out infinite;
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: rotate(-5deg);
+    }
+    50% {
+      transform: rotate(5deg);
+    }
+  }
+
+  --animate-pulse-glow: pulse-glow 1.5s ease-in-out infinite;
+
+  @keyframes pulse-glow {
+    100% {
+      box-shadow: 0 0 0 0 rgba(56, 189, 248, 0);
+    }
+    50% {
+      box-shadow: 0 0 24px 8px rgba(56, 189, 248, 0.35);
+    }
+  }
+}
