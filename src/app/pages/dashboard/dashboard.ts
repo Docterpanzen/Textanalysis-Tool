@@ -21,6 +21,7 @@ interface PlagiarismCheck {
   imports: [DecimalPipe],
 })
 export class Dashboard {
+  /*
   ngOnInit() {
     let x = 0,
       y = 0;
@@ -46,6 +47,7 @@ export class Dashboard {
     };
     animate();
   }
+  */
 
   recentChecks: PlagiarismCheck[] = [
     {

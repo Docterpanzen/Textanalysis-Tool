@@ -67,7 +67,7 @@
       <div class="flex flex-wrap gap-3 justify-center">
         <label
           for="fileInput"
-          class="cursor-pointer rounded-xl bg-sky-700 hover:bg-sky-500 px-4 py-2 text-sm font-medium"
+          class="cursor-pointer rounded-xl bg-sky-700 hover:bg-sky-500 px-4 py-2 text-sm font-medium transition delay-100 hover:scale-110"
         >
           Dateien auswählen
         </label>
@@ -75,7 +75,7 @@
           <button
             type="button"
             (click)="clearAll()"
-            class="px-4 py-2 rounded-xl border border-slate-700 hover:bg-red-400 text-sm cursor-pointer"
+            class="px-4 py-2 rounded-xl border border-slate-700 hover:bg-red-400 text-sm cursor-pointer transition delay-100 hover:scale-110"
           >
             Alle entfernen
           </button>
@@ -167,7 +167,7 @@
 
                   <!-- Track -->
                   <div
-                    class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-emerald-500 transition-colors duration-300"
+                    class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-emerald-600 transition-colors duration-300"
                   ></div>
 
                   <!-- Knob -->
@@ -182,7 +182,9 @@
                 </label>
 
                 <!-- Icons für Auf-/Zuklappen -->
-                <span class="text-slate-400 hover:bg-sky-500 rounded-lg p-1">
+                <span
+                  class="text-slate-400 hover:bg-sky-500 rounded-lg p-1 transition delay-100 hover:scale-110"
+                >
                   @if (item.isOpen) {
                     <img src="assets/Input/arrow_up_white_icon.svg" alt="" class="w-5 h-5" />
                   } @else {
@@ -194,7 +196,7 @@
                 <button
                   type="button"
                   (click)="removeFile(item); $event.stopPropagation()"
-                  class="px-4 py-2 rounded-xl border border-slate-700 hover:bg-red-400 text-sm cursor-pointer"
+                  class="px-4 py-2 rounded-xl border border-slate-700 hover:bg-red-400 text-sm cursor-pointer transition delay-100 hover:scale-110"
                 >
                   Entfernen
                 </button>
@@ -229,7 +231,7 @@
       type="button"
       (click)="startComparison()"
       [disabled]="!hasFiles"
-      class="cursor-pointer px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed"
+      class="cursor-pointer px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed transition delay-100 hover:scale-110"
     >
       Verarbeiten &amp; vergleichen starten
     </button>
