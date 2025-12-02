@@ -1,7 +1,9 @@
 import { Routes } from '@angular/router';
 import { Shell } from './layout/shell/shell';
 import { Dashboard } from './pages/dashboard/dashboard';
+import { Documentation } from './pages/documentation/documentation';
 import { Input } from './pages/input/input';
+import { Textanalyse } from './pages/textanalyse/textanalyse';
 
 export const routes: Routes = [
   {
@@ -10,6 +12,8 @@ export const routes: Routes = [
     children: [
       { path: 'input', component: Input },
       { path: 'dashboard', component: Dashboard },
+      { path: 'textanalyse', component: Textanalyse },
+      { path: 'documentation', component: Documentation },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ],
   },

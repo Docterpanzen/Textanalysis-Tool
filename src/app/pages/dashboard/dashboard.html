@@ -1,4 +1,4 @@
-<div class="space-y-6">
+<div>
   <!-- Header -->
   <header class="flex items-center justify-between">
     <div>
@@ -15,119 +15,9 @@
   </header>
 
   <!-- Stat Cards -->
-  <section class="grid gap-4 md:grid-cols-3">
-    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <p class="text-xs uppercase tracking-wide text-slate-400">Durchgeführte Checks</p>
-      <p class="mt-3 text-3xl font-semibold">{{ totalChecks }}</p>
-      <p class="mt-1 text-xs text-slate-500">seit Projektstart</p>
-    </div>
-
-    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <p class="text-xs uppercase tracking-wide text-slate-400">Verdächtige Treffer</p>
-      <p class="mt-3 text-3xl font-semibold text-amber-400">
-        {{ suspiciousCount }}
-      </p>
-      <p class="mt-1 text-xs text-slate-500">mit Ähnlichkeit &gt; 30&nbsp;%</p>
-    </div>
-
-    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <p class="text-xs uppercase tracking-wide text-slate-400">Ø Ähnlichkeit</p>
-      <p class="mt-3 text-3xl font-semibold">{{ avgSimilarity }}%</p>
-      <p class="mt-1 text-xs text-slate-500">über alle Checks</p>
-    </div>
-  </section>
-
-  <!-- Main content: Recent checks -->
-  <section class="grid gap-6 lg:grid-cols-3">
-    <!-- Liste -->
-    <div class="lg:col-span-2 rounded-2xl border border-slate-800 bg-slate-900/40">
-      <div class="flex items-center justify-between border-b border-slate-800 px-4 py-3">
-        <h2 class="text-sm font-medium text-slate-200">
-          Letzte Prüfungen (Statisch erstellte Mock-Daten)
-        </h2>
-        <span class="text-xs text-slate-500"> {{ recentChecks.length }} Einträge </span>
-      </div>
-
-      <ul class="divide-y divide-slate-800">
-        @for (check of recentChecks; track check.id) {
-          <li class="flex items-center justify-between px-4 py-3 hover:bg-slate-900/70">
-            <div class="min-w-0">
-              <p class="truncate text-sm font-medium text-slate-100">
-                {{ check.title }}
-              </p>
-              <p class="mt-0.5 text-xs text-slate-500">
-                {{ check.date }}
-              </p>
-            </div>
-
-            <div class="flex items-center gap-4">
-              <!-- similarity colored number -->
-              @if (check.status === 'clean') {
-                <span class="text-sm tabular-nums text-emerald-400"> {{ check.similarity }}% </span>
-              } @else if (check.status === 'warning') {
-                <span class="text-sm tabular-nums text-amber-300"> {{ check.similarity }}% </span>
-              } @else {
-                <span class="text-sm tabular-nums text-rose-400"> {{ check.similarity }}% </span>
-              }
-
-              <!-- status badge -->
-              @if (check.status === 'clean') {
-                <span
-                  class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
-                >
-                  Unkritisch
-                </span>
-              } @else if (check.status === 'warning') {
-                <span
-                  class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-amber-500/10 text-amber-300 border border-amber-500/30"
-                >
-                  Auffällig
-                </span>
-              } @else {
-                <span
-                  class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-rose-500/10 text-rose-300 border border-rose-500/30"
-                >
-                  Kritisch
-                </span>
-              }
-            </div>
-          </li>
-        }
-      </ul>
-    </div>
-
-    <!-- Info Card -->
-    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
-      <h2 class="text-sm font-medium text-slate-200">Was zeigt dir dieses Dashboard?</h2>
-      <p class="text-xs text-slate-400 leading-relaxed">
-        Dieses Mock-Dashboard zeigt dir, wie spätere echte Daten aussehen könnten: Anzahl der
-        Prüfungen, verdächtige Treffer und eine Liste mit den zuletzt geprüften Dokumenten.
-      </p>
-      <p class="text-xs text-slate-400 leading-relaxed">
-        Im nächsten Schritt kannst du hier reale Ergebnisse aus deiner Plagiat-Logik einbinden.
-      </p>
-
-      <div class="rounded-xl border border-sky-500/40 bg-sky-500/5 px-3 py-2 text-xs text-sky-200">
-        Tipp: Füge später eine Detail-Ansicht für die einzelnen Prüfungen hinzu.
-      </div>
-    </div>
-  </section>
-  <!-- Main content: Recent checks -->
-  <section class="grid gap-6 lg:grid-cols-3">
-    <div
-      class="col-span-2 rounded-2xl border px-4 py-2 border-slate-800 hover:animate-glow-once hover:border-sky-500"
-    >
-      col Span 2
-    </div>
-    <div
-      class="rounded-2xl border px-4 py-2 border-slate-800 hover:animate-bounce hover:border-sky-500"
-    >
-      col Span 1
-    </div>
-  </section>
 
   <!-- Neue Sektion: aktuell importierte Dateien -->
-  <section class="mt-8 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+  <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
     <div class="flex items-center justify-between">
       <h2 class="text-sm font-medium text-slate-200">Aktuelle Uploads (Session)</h2>
       <span class="text-xs text-slate-500"> {{ uploadedFiles.length }} Datei(en) </span>
@@ -154,8 +44,8 @@
               <p class="truncate text-sm text-slate-100">
                 {{ item.file.name }}
               </p>
-              <p class="text-xs text-slate-500">
-                {{ item.file.size | number }} Bytes
+              <p class="flex items-center gap-3 text-xs text-slate-500">
+                <span class="whitespace-nowrap"> {{ item.file.size | number }} Bytes </span>
                 @if (item.useCleaned) {
                   <span
                     class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"

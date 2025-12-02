@@ -35,7 +35,7 @@ export default [
     plugins: {
       '@typescript-eslint': tseslint,
       '@angular-eslint': angular,
-      prettier: prettierPlugin,
+      //prettier: prettierPlugin,
     },
     rules: {
       ...tseslint.configs['recommended'].rules,

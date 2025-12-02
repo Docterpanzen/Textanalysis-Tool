@@ -1,0 +1,233 @@
+<div>
+  <!-- STICKY HEADER -->
+  <div class="sticky top-0 z-20 bg-slate-900 shadow-lg border-b border-slate-700">
+    <!-- HEADER -->
+    <header class="px-4 py-4">
+      <h1 class="text-3xl font-semibold">Dokumentation</h1>
+    </header>
+
+    <!-- NAVIGATION -->
+    <nav class="px-4 py-3 flex flex-wrap gap-6 text-slate-300">
+      <a
+        (click)="scrollTo('einleitung')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        Einleitung
+      </a>
+
+      <a
+        (click)="scrollTo('pipeline')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        Pipeline
+      </a>
+
+      <a
+        (click)="scrollTo('bow')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        BoW
+      </a>
+
+      <a
+        (click)="scrollTo('tfidf')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        TF &amp; TF-IDF
+      </a>
+
+      <a
+        (click)="scrollTo('dimensionsreduktion')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        Dimensionsreduktion
+      </a>
+
+      <a
+        (click)="scrollTo('clustering')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        Clustering
+      </a>
+
+      <a
+        (click)="scrollTo('vokabular')"
+        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+      >
+        Vokabular
+      </a>
+    </nav>
+  </div>
+
+  <!-- INHALT – Seite scrollt ganz normal -->
+  <main class="pt-6 space-y-6">
+    <!-- EINLEITUNG -->
+    <section
+      id="einleitung"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">Einleitung</h2>
+
+      <p>
+        Diese Anwendung kombiniert Plagiatsanalyse und datenbasierte Textanalyse. Auf dieser Seite
+        findest du eine kompakte Übersicht über alle verwendeten Methoden und deren Bedeutung.
+      </p>
+
+      <ul class="list-disc list-inside space-y-1">
+        <li><strong>Bag-of-Words:</strong> Grundform der Textdarstellung</li>
+        <li><strong>TF/TF-IDF:</strong> Gewichtete Textrepräsentationen</li>
+        <li><strong>Dimensionsreduktion:</strong> Kompression &amp; Rauschunterdrückung</li>
+        <li><strong>Clustering:</strong> Gruppierung ähnlicher Dokumente</li>
+        <li><strong>Pipeline:</strong> Übersicht des gesamten Analyseprozesses</li>
+        <li><strong>Vokabular:</strong> Umgang mit neuen Texten und dynamischen Wörterlisten</li>
+      </ul>
+    </section>
+
+    <!-- PIPELINE -->
+    <section
+      id="pipeline"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">Pipeline der Textanalyse</h2>
+
+      <ol class="list-decimal list-inside space-y-2 text-slate-300">
+        <li>
+          <strong>Vorverarbeitung:</strong>
+          Texte werden bereinigt (Kleinbuchstaben, Tokenisierung, Entfernen von Sonderzeichen).
+        </li>
+        <li>
+          <strong>Vokabularerstellung:</strong>
+          Alle vorkommenden Wörter werden gesammelt und nummeriert.
+        </li>
+        <li>
+          <strong>Vektorrepräsentation:</strong>
+          Erstellung von BoW-, TF- oder TF-IDF-Vektoren.
+        </li>
+        <li>
+          <strong>Dimensionsreduktion:</strong>
+          Kompression der hochdimensionalen Vektoren (Top-k oder SVD).
+        </li>
+        <li>
+          <strong>Clustering:</strong>
+          Gruppierung ähnlicher Dokumente (z. B. mit k-Means).
+        </li>
+      </ol>
+    </section>
+
+    <!-- BAG OF WORDS -->
+    <section
+      id="bow"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">Bag-of-Words (BoW)</h2>
+
+      <p>
+        Beim Bag-of-Words Modell wird gezählt, wie oft jedes Wort eines Dokuments vorkommt. Aus
+        allen Texten wird ein gemeinsames Vokabular erstellt, und jedes Dokument wird als Vektor
+        dargestellt (ein Eintrag je Wort).
+      </p>
+
+      <p class="text-slate-400">
+        Beispiel:
+        <br />
+        „Datenanalyse ist wichtig“ →
+        <code>[1, 1, 1, 1, 0, …]</code>
+        (nur Häufigkeiten)
+      </p>
+    </section>
+
+    <!-- TF & TF-IDF -->
+    <section
+      id="tfidf"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">TF &amp; TF-IDF</h2>
+
+      <p>
+        TF und TF-IDF sind verbesserte Versionen von Bag-of-Words. Sie gewichten Wörter nach
+        Relevanz und Informationsgehalt.
+      </p>
+
+      <ul class="list-disc list-inside space-y-1">
+        <li>
+          <strong>TF (Term Frequency):</strong>
+          Normiert die Häufigkeit eines Wortes durch die Dokumentlänge. Dadurch werden lange und
+          kurze Texte vergleichbar.
+        </li>
+        <li>
+          <strong>TF-IDF (Term Frequency – Inverse Document Frequency):</strong>
+          Reduziert den Einfluss sehr häufiger Wörter („und“, „ist“) und hebt seltene, informative
+          Wörter hervor.
+        </li>
+      </ul>
+    </section>
+
+    <!-- DIMENSIONSREDUKTION -->
+    <section
+      id="dimensionsreduktion"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">Dimensionsreduktion</h2>
+
+      <p>
+        Textvektoren besitzen oft Tausende Dimensionen. Eine Dimensionsreduktion komprimiert diese
+        Vektoren, entfernt Rauschen und liefert bessere Ergebnisse bei Clustering und Analyse.
+      </p>
+
+      <ul class="list-disc list-inside space-y-1">
+        <li><strong>Top-k Auswahl:</strong> Nur die wichtigsten Wörter behalten.</li>
+        <li>
+          <strong>SVD / LSA:</strong> Mathematische Zerlegung der TF-IDF-Matrix in latente Themen.
+        </li>
+      </ul>
+
+      <p class="text-slate-400">Beispiel: 2000 Wörter → 50 Themen-Dimensionen</p>
+    </section>
+
+    <!-- CLUSTERING -->
+    <section
+      id="clustering"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">Clustering</h2>
+
+      <p>
+        Dokumente werden anhand ihrer Vektorrepräsentation in Gruppen eingeteilt. Häufig verwendetes
+        Verfahren: <strong>k-Means</strong>.
+      </p>
+
+      <p>Das Ergebnis besteht aus:</p>
+
+      <ul class="list-disc list-inside space-y-1">
+        <li><strong>Cluster-ID:</strong> Zu welchem Cluster gehört ein Text?</li>
+        <li>
+          <strong>Top-Wörter pro Cluster:</strong>
+          Rückschlüsse auf das Thema (z. B. „Daten“, „Software“ für technische Texte).
+        </li>
+      </ul>
+    </section>
+
+    <!-- VOKABULAR -->
+    <section
+      id="vokabular"
+      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+    >
+      <h2 class="text-2xl font-semibold">Vokabular &amp; neue Texte</h2>
+
+      <p>
+        Das Vokabular enthält alle Wörter, die in den aktuell vorhandenen Texten vorkommen. Wird ein
+        neuer Text hinzugefügt und enthält neue Wörter, wächst das Vokabular.
+      </p>
+
+      <p>
+        Daher werden beim Hinzufügen neuer Dokumente alle BoW-, TF- oder TF-IDF-Vektoren neu
+        berechnet. Dies ist der normale und korrekte Ablauf bei BoW-basierten Verfahren.
+      </p>
+
+      <p class="text-slate-400">
+        Alternative Varianten wie „Feature-Hashing“ umgehen dieses Problem, sind jedoch für dieses
+        Projekt nicht notwendig.
+      </p>
+    </section>
+  </main>
+</div>

@@ -1,12 +1,23 @@
-<div class="flex min-h-screen bg-slate-900 text-slate-100">
-  <!-- Sidebar -->
-  <aside class="w-72 bg-slate-950 border-r border-slate-800 p-4">
+<div class="min-h-screen bg-slate-900 text-slate-100">
+  <!-- Fixe Sidebar -->
+  <aside
+    class="fixed inset-y-0 left-0 w-72 bg-slate-950 border-r border-slate-800 p-4 flex-shrink-0"
+  >
     <h2 class="text-3xl font-semibold mb-8 flex items-center gap-2">
       <img src="assets/Icons/check_white_icon.svg" class="w-8 h-8" alt="" />
-      Plagiatchecker
+      Textanalyse
     </h2>
 
     <nav class="space-y-2">
+      <a
+        routerLink="/input"
+        routerLinkActive="bg-slate-800"
+        class="block px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-4"
+      >
+        <img src="assets/Icons/upload_white_icon.svg" class="w-5 h-5" alt="" />
+        Input
+      </a>
+
       <a
         routerLink="/dashboard"
         routerLinkActive="bg-slate-800"
@@ -17,18 +28,27 @@
       </a>
 
       <a
-        routerLink="/input"
+        routerLink="/textanalyse"
         routerLinkActive="bg-slate-800"
         class="block px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-4"
       >
-        <img src="assets/Icons/upload_white_icon.svg" class="w-5 h-5" alt="" />
-        Input
+        <img src="assets/Textanalyse/textanalyse_white_icon.svg" class="w-5 h-5" alt="" />
+        Textanalyse
+      </a>
+
+      <a
+        routerLink="/documentation"
+        routerLinkActive="bg-slate-800"
+        class="block px-3 py-2 rounded-lg hover:bg-slate-800 flex items-center gap-4"
+      >
+        <img src="assets/Documentation/documentation_white_icons.svg" class="w-5 h-5" alt="" />
+        Documentation
       </a>
     </nav>
   </aside>
 
-  <!-- Content -->
-  <main class="flex-1 p-6">
+  <!-- Content rechts, mit Platz neben der fixen Sidebar -->
+  <main class="ml-72 p-6">
     <router-outlet></router-outlet>
   </main>
 </div>
