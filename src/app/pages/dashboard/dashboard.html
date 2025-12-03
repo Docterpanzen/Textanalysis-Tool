@@ -14,59 +14,102 @@
     </button>
   </header>
 
-  <!-- Stat Cards -->
-
-  <!-- Neue Sektion: aktuell importierte Dateien -->
+  <!-- Aktuelle Uploads -->
   <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
     <div class="flex items-center justify-between">
       <h2 class="text-sm font-medium text-slate-200">Aktuelle Uploads (Session)</h2>
-      <span class="text-xs text-slate-500"> {{ uploadedFiles.length }} Datei(en) </span>
+      <span class="text-xs text-slate-500">{{ uploadedFiles.length }} Datei(en)</span>
     </div>
 
     @if (uploadedFiles.length === 0) {
-      <div class="flex md:grid-cols-3 items-center justify-center gap-4 py-6">
-        <p class="text-xs text-slate-500 col-span-2">
+      <!-- Keine Dateien -->
+      <div class="flex items-center justify-between py-6">
+        <p class="text-xs text-slate-500">
           Noch keine Dateien hochgeladen. Wechsle zum Tab „Input“, um Dateien hinzuzufügen.
         </p>
+
         <button
           (click)="goToInput()"
           class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-sm font-medium cursor-pointer transition delay-100 hover:scale-110"
         >
-          <!--transition delay-100 hover:scale-110-->
           Neue Texte hinzufügen
         </button>
       </div>
     } @else {
+      <!-- Dateiliste -->
       <ul class="divide-y divide-slate-800">
         @for (item of uploadedFiles; track item.file.name) {
-          <li class="py-2 flex items-center justify-between">
-            <div class="min-w-0">
-              <p class="truncate text-sm text-slate-100">
-                {{ item.file.name }}
-              </p>
-              <p class="flex items-center gap-3 text-xs text-slate-500">
-                <span class="whitespace-nowrap"> {{ item.file.size | number }} Bytes </span>
-                @if (item.useCleaned) {
-                  <span
-                    class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
-                  >
-                    bereinigt
-                  </span>
-                } @else {
-                  <span
-                    class="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-slate-700/60 text-slate-200 border border-slate-600/80"
-                  >
-                    original
-                  </span>
-                }
-              </p>
+          <li class="py-2">
+            <!-- Kopfzeile -->
+            <div
+              class="flex items-center justify-between cursor-pointer"
+              (click)="toggleOpen(item)"
+            >
+              <div class="min-w-0">
+                <p class="truncate text-sm text-slate-100">
+                  {{ item.file.name }}
+                </p>
+
+                <p class="flex items-center gap-3 text-xs text-slate-500">
+                  <span class="whitespace-nowrap">{{ formatSize(item.file.size) }}</span>
+
+                  @if (item.useCleaned) {
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+                    >
+                      bereinigt
+                    </span>
+                  } @else {
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] bg-slate-700/60 text-slate-200 border border-slate-600/80"
+                    >
+                      original
+                    </span>
+                  }
+                </p>
+              </div>
+
+              <!-- Toggle + Pfeil -->
+              <div class="flex items-center gap-3">
+                <!-- Bereinigt/Original toggle -->
+                <label
+                  class="relative inline-flex items-center cursor-pointer"
+                  (click)="toggleCleanMode(item); $event.stopPropagation()"
+                >
+                  <input type="checkbox" class="sr-only peer" [checked]="item.useCleaned" />
+
+                  <div
+                    class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-emerald-600 transition-colors duration-300"
+                  ></div>
+
+                  <div
+                    class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.4)] peer-checked:shadow-[0_0_6px_rgba(52,211,153,0.7)] transition-all duration-300 peer-checked:translate-x-5"
+                  ></div>
+                </label>
+
+                <span class="text-slate-400">
+                  @if (item.isOpen) {
+                    <img src="assets/Input/arrow_up_white_icon.svg" alt="" class="w-5 h-5" />
+                  } @else {
+                    <img src="assets/Input/arrow_down_white_icon.svg" alt="" class="w-5 h-5" />
+                  }
+                </span>
+              </div>
             </div>
 
-            <!-- Optional: kurz anzeigen, dass Inhalt existiert -->
-            @if (!item.isLoading && !item.error && item.content) {
-              <span class="text-[11px] text-slate-400 max-w-[180px] truncate">
-                {{ (item.cleanedContent || item.content)?.slice(0, 80) }}…
-              </span>
+            <!-- Aufklapp-Bereich -->
+            @if (item.isOpen) {
+              <div class="mt-3 rounded-lg bg-slate-900/80 border border-slate-700 p-3">
+                @if (item.isLoading) {
+                  <p class="text-xs text-slate-500">Lade Inhalt...</p>
+                } @else if (item.error) {
+                  <p class="text-xs text-rose-400">{{ item.error }}</p>
+                } @else {
+                  <pre class="text-xs text-slate-100 whitespace-pre-wrap max-h-52 overflow-y-auto"
+                    >{{ getText(item) }}
+                  </pre>
+                }
+              </div>
             }
           </li>
         }

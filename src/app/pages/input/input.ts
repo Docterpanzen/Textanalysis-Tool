@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import {
+  cleanText,
+  formatSize as formatSizeHelper,
+  getTextForComparison as getTextForComparisonHelper,
+  toggleCleanMode as toggleCleanModeHelper,
+  toggleOpen as toggleOpenHelper,
+} from '../../__common/helper';
 import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiarism-session';
 
 @Component({
@@ -19,8 +27,10 @@ export class Input {
 
   isDragOver = false;
 
-  constructor(private session: PlagiarismSessionService) {
-    // hier holen wir uns NUR die Referenz auf das Service-Array
+  constructor(
+    private session: PlagiarismSessionService,
+    private router: Router, // <-- HIER hinzufügen
+  ) {
     this.files = this.session.files;
   }
 
@@ -82,7 +92,7 @@ export class Input {
     reader.onload = () => {
       item.content = (reader.result as string) ?? '';
       // direkt bereinigte Version erzeugen
-      item.cleanedContent = this.cleanText(item.content);
+      item.cleanedContent = cleanText(item.content);
       item.isLoading = false;
     };
 
@@ -94,25 +104,14 @@ export class Input {
     reader.readAsText(file, 'utf-8');
   }
 
-  private cleanText(text: string): string {
-    return text
-      .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-  }
-
   /** Umschalten zwischen bereinigt / original für eine Datei */
   toggleCleanMode(item: UploadedTextFile) {
-    item.useCleaned = !item.useCleaned;
+    toggleCleanModeHelper(item);
   }
 
   /** Text, der tatsächlich für Vergleich etc. verwendet werden soll */
   getTextForComparison(item: UploadedTextFile): string {
-    if (item.useCleaned && item.cleanedContent) {
-      return item.cleanedContent;
-    }
-    return item.content ?? '';
+    return getTextForComparisonHelper(item);
   }
 
   private processFiles(files: File[]) {
@@ -148,41 +147,26 @@ export class Input {
   removeFile(file: UploadedTextFile) {
     const index = this.files.indexOf(file);
     if (index !== -1) {
-      this.files.splice(index, 1); // ✅ Array IN-PLACE ändern
+      this.files.splice(index, 1);
     }
   }
 
   clearAll() {
-    this.files.length = 0; // ✅ Array leeren, Referenz bleibt
+    this.files.length = 0;
     this.session.clear();
   }
 
-  startComparison() {
-    if (this.files.length < 2) {
-      this.errorMessage = 'Bitte lade mindestens zwei Dateien hoch, um einen Vergleich zu starten.';
-      this.successMessage = null;
-      return;
-    }
-
-    this.errorMessage = null;
-    this.successMessage = 'Vergleich erfolgreich gestartet (Mock).';
-
-    // hier nimmst du bereits "bereinigt oder nicht" pro Datei
-    const textsForComparison = this.files.map((f) => this.getTextForComparison(f));
-
-    console.log('Texte für Vergleich (bereinigt/roh):', textsForComparison);
+  goToTextanalyse() {
+    // direkt zur Textanalyse-Seite navigieren
+    this.router.navigate(['/textanalyse']);
   }
 
   formatSize(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    const kb = bytes / 1024;
-    if (kb < 1024) return `${kb.toFixed(1)} KB`;
-    const mb = kb / 1024;
-    return `${mb.toFixed(1)} MB`;
+    return formatSizeHelper(bytes);
   }
 
   toggleOpen(item: UploadedTextFile) {
-    item.isOpen = !item.isOpen;
+    toggleOpenHelper(item);
     this.debugMessage = `Datei "${item.file.name}" ist vom Typ "${item.file.type}" und hat die Endung "${item.file.name
       .split('.')
       .pop()}"`;

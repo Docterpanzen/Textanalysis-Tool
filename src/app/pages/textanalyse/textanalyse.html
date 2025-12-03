@@ -1,7 +1,247 @@
 <div>
+  <!-- Header -->
   <header class="flex items-center justify-between">
     <div>
       <h1 class="text-3xl font-semibold">Textanalyse</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        Nutze die hochgeladenen Texte, schaue sie dir an und konfiguriere die Analyse-Pipeline.
+      </p>
     </div>
+
+    <button
+      (click)="goToInput()"
+      class="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-sm font-medium cursor-pointer transition delay-100 hover:scale-110"
+    >
+      Neue Texte hinzufügen
+    </button>
   </header>
+
+  <!-- Dokument-Liste (wie im Input-Tab, aber ohne Entfernen) -->
+  <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="text-sm font-medium text-slate-200">Dokumente für die Analyse</h2>
+
+      @if (hasFiles) {
+        <span class="text-xs text-slate-500"> {{ files.length }} Datei(en) </span>
+      }
+    </div>
+
+    @if (!hasFiles) {
+      <p class="text-xs text-slate-500">
+        Noch keine Dateien vorhanden. Lade im Tab
+        <span class="font-mono text-[11px]">Input</span>
+        neue Texte hoch.
+      </p>
+    } @else {
+      <ul class="divide-y divide-slate-800">
+        @for (item of files; track item.file.name) {
+          <li class="py-2">
+            <div
+              class="flex items-center justify-between cursor-pointer"
+              (click)="toggleOpen(item)"
+            >
+              <!-- Linke Seite: Dateiname + Größe -->
+              <div class="min-w-0">
+                <p class="truncate text-sm text-slate-100">
+                  {{ item.file.name }}
+                </p>
+                <p class="text-xs text-slate-500">
+                  {{ formatSize(item.file.size) }}
+                </p>
+              </div>
+
+              <!-- Rechte Seite: Toggle + Pfeil (kein Entfernen hier) -->
+              <div class="flex items-center gap-3">
+                <!-- Clean/Original Toggle -->
+                <label
+                  class="relative inline-flex items-center cursor-pointer"
+                  (click)="toggleCleanMode(item); $event.stopPropagation()"
+                >
+                  <input
+                    type="checkbox"
+                    class="sr-only peer"
+                    [checked]="item.useCleaned"
+                    (change)="toggleCleanMode(item)"
+                  />
+
+                  <div
+                    class="w-11 h-6 bg-slate-700 rounded-full peer peer-checked:bg-emerald-600 transition-colors duration-300"
+                  ></div>
+
+                  <div
+                    class="absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.4)] peer-checked:shadow-[0_0_6px_rgba(52,211,153,0.7)] transition-all duration-300 peer-checked:translate-x-5"
+                  ></div>
+
+                  <span class="ml-3 text-xs text-slate-300 inline-block w-16 text-left">
+                    {{ item.useCleaned ? 'Bereinigt' : 'Original' }}
+                  </span>
+                </label>
+
+                <span
+                  class="text-slate-400 hover:bg-sky-500 rounded-lg p-1 transition delay-100 hover:scale-110"
+                >
+                  @if (item.isOpen) {
+                    <img src="assets/Input/arrow_up_white_icon.svg" alt="" class="w-5 h-5" />
+                  } @else {
+                    <img src="assets/Input/arrow_down_white_icon.svg" alt="" class="w-5 h-5" />
+                  }
+                </span>
+              </div>
+            </div>
+
+            <!-- Aufklapp-Bereich mit Text -->
+            @if (item.isOpen) {
+              <div class="mt-3 rounded-lg bg-slate-900/80 border border-slate-700 p-3 space-y-2">
+                @if (item.isLoading) {
+                  <p class="text-xs text-slate-500">Lade Inhalt...</p>
+                } @else if (item.error) {
+                  <p class="text-xs text-rose-400">{{ item.error }}</p>
+                } @else {
+                  <pre class="text-xs text-slate-100 whitespace-pre-wrap max-h-52 overflow-y-auto"
+                    >{{ getTextForView(item) }}
+                  </pre>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </section>
+
+  <!-- Pipeline-Einstellungen -->
+  <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
+    <h2 class="text-sm font-medium text-slate-200">Pipeline-Einstellungen (Demo im Browser)</h2>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Vektorrepräsentation</label>
+        <select
+          [(ngModel)]="vectorizer"
+          class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        >
+          <option value="bow">Bag-of-Words (BoW)</option>
+          <option value="tf">Term Frequency (TF)</option>
+          <option value="tfidf">TF-IDF</option>
+        </select>
+        @if (vectorizer === 'bow') {
+          <p class="mt-1 text-[11px] text-slate-500">BoW: rohe Häufigkeit</p>
+        } @else if (vectorizer === 'tf') {
+          <p class="mt-1 text-[11px] text-slate-500">TF: normiert</p>
+        } @else if (vectorizer === 'tfidf') {
+          <p class="mt-1 text-[11px] text-slate-500">TF-IDF: betont seltene, informative Wörter.</p>
+        }
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Maximale Vokabulargröße</label>
+        <input
+          type="number"
+          min="0"
+          [(ngModel)]="maxFeatures"
+          class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+        <p class="mt-1 text-[11px] text-slate-500">Maximale Anzahl der Wörter im Vokabular</p>
+      </div>
+
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Anzahl Cluster (k)</label>
+        <input
+          type="number"
+          min="1"
+          [(ngModel)]="numClusters"
+          class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+        <p class="mt-1 text-[11px] text-slate-500">
+          Anzahl der Cluster für k-Means. Z.B. 5 oder 10 je nach Datensatzgröße.
+        </p>
+      </div>
+
+      <div>
+        <label class="flex items-center gap-2 text-xs text-slate-400 mb-1">
+          <input type="checkbox" [(ngModel)]="useDimReduction" class="rounded" />
+          Dimensionsreduktion planen (z.B. SVD)
+        </label>
+
+        @if (useDimReduction) {
+          <input
+            type="number"
+            min="2"
+            [(ngModel)]="numComponents"
+            class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+          />
+          <p class="mt-1 text-[11px] text-slate-500">
+            Ziel-Dimensionen, z.B. 50 oder 100. Wird später im Backend umgesetzt.
+          </p>
+        } @else {
+          <p class="mt-1 text-[11px] text-slate-500">
+            Ohne Dimensionsreduktion wird später direkt im Vollraum geclustert.
+          </p>
+        }
+      </div>
+    </div>
+
+    @if (errorMessage) {
+      <p
+        class="mt-2 text-sm text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-2 rounded-xl"
+      >
+        {{ errorMessage }}
+      </p>
+    }
+
+    <div class="mt-4 flex justify-end">
+      <button
+        type="button"
+        (click)="startAnalysis()"
+        [disabled]="!hasFiles || isLoading"
+        class="px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed cursor-pointer transition delay-100 hover:scale-110"
+      >
+        @if (!isLoading) {
+          Analyse starten
+        } @else {
+          Analysiere ...
+        }
+      </button>
+    </div>
+  </section>
+
+  <!-- Analyse-Ergebnis -->
+  @if (result) {
+    <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
+      <h2 class="text-sm font-medium text-slate-200">Cluster-Ergebnis (Browser-Demo)</h2>
+      <p class="text-xs text-slate-500">
+        Vokabulargröße (über alle Dokumente): {{ result.vocabularySize }} Wörter
+      </p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        @for (cluster of result.clusters; track cluster.id) {
+          <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-3 space-y-2">
+            <h3 class="text-sm font-semibold text-slate-100">Cluster {{ cluster.id }}</h3>
+
+            <p class="text-xs text-slate-400">
+              Typische Wörter:
+              <span class="font-mono text-[11px]">
+                @if (cluster.topTerms.length > 0) {
+                  {{ cluster.topTerms.join(', ') }}
+                } @else {
+                  (keine aussagekräftigen Wörter)
+                }
+              </span>
+            </p>
+
+            <p class="text-xs text-slate-400">Dokumente:</p>
+            <ul class="list-disc list-inside text-[11px] text-slate-300">
+              @if (cluster.documentNames.length === 0) {
+                <li>(keine Dokumente zugeordnet)</li>
+              } @else {
+                @for (name of cluster.documentNames; track name) {
+                  <li>{{ name }}</li>
+                }
+              }
+            </ul>
+          </div>
+        }
+      </div>
+    </section>
+  }
 </div>
