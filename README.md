@@ -76,4 +76,4 @@ Bei Fragen, Anregungen, Kritik, usw. meldet euch gerne bei einem von unseren Dev
 
 [Oskar Klöpfer](http://github.com/Docterpanzen)
 
-[Can Kal](http://github.com/can)
+[Can Kal](http://github.com/BaeroBaer)
