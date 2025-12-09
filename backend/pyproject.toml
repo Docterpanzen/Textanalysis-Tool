@@ -13,3 +13,18 @@ license = {text = "MIT"}
 
 [tool.pdm]
 distribution = false
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "httpx>=0.28.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.pdm.scripts]
+test = {cmd = "pdm run pytest"}
+api = {cmd = "pdm run uvicorn textanalyse_backend.main:app --reload --port 8000"}

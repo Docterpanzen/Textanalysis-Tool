@@ -1,4 +1,3 @@
-# backend/textanalyse_backend/services/vectorization.py
 from typing import Tuple, Literal, Optional
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
