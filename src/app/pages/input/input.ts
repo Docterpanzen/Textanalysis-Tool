@@ -8,7 +8,7 @@ import {
   toggleCleanMode as toggleCleanModeHelper,
   toggleOpen as toggleOpenHelper,
 } from '../../__common/helper';
-import { TextsApiService } from '../../api/texts_api.service'; // NEW: backend text API
+import { TextsApiService } from '../../api/texts_api.service';
 import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiarism-session';
 
 @Component({
@@ -31,7 +31,7 @@ export class Input {
   constructor(
     private session: PlagiarismSessionService,
     private router: Router,
-    private textsApi: TextsApiService, // NEW: inject API service
+    private textsApi: TextsApiService,
   ) {
     this.files = this.session.files;
   }
@@ -96,9 +96,7 @@ export class Input {
       // create cleaned version directly
       item.cleanedContent = cleanText(item.content);
       item.isLoading = false;
-
-      // NEW: send original content to backend DB
-      this.saveTextToBackend(item);
+      // IMPORTANT: no automatic backend upload here
     };
 
     reader.onerror = () => {
@@ -109,25 +107,50 @@ export class Input {
     reader.readAsText(file, 'utf-8');
   }
 
-  /** Persist the uploaded text in the backend database */
-  private saveTextToBackend(item: UploadedTextFile) {
-    if (!item.content) return;
+  /** Upload all text-like files to the backend on explicit user action */
+  uploadAllTexts() {
+    this.errorMessage = null;
+    this.successMessage = null;
 
-    this.textsApi
-      .createText({
-        name: item.file.name,
-        content: item.content,
-      })
-      .subscribe({
-        next: () => {
-          // Keep the message short; you can refine this later if you like
-          this.successMessage = `Text "${item.file.name}" was saved in the database.`;
-        },
-        error: (err) => {
-          console.error('Error while saving text to backend', err);
-          this.errorMessage = 'At least one text could not be saved to the backend.';
-        },
-      });
+    // Select only files that have readable text content
+    const textExtensions = ['.txt', '.md', '.rtf', '.odt'];
+    const candidates = this.files.filter((item) => {
+      if (!item.content) return false;
+      const lowerName = item.file.name.toLowerCase();
+      const isTextLike =
+        item.file.type.startsWith('text/') || textExtensions.some((ext) => lowerName.endsWith(ext));
+      // Do not send placeholder preview texts for non-text files
+      return isTextLike;
+    });
+
+    if (candidates.length === 0) {
+      this.errorMessage = 'No new text files to upload.';
+      return;
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+
+    candidates.forEach((item) => {
+      this.textsApi
+        .createText({
+          name: item.file.name,
+          content: item.content ?? '',
+        })
+        .subscribe({
+          next: () => {
+            successCount++;
+            if (successCount + failCount === candidates.length && successCount > 0) {
+              this.successMessage = `${successCount} text file(s) successfully saved in the database.`;
+            }
+          },
+          error: (err) => {
+            console.error('Error while saving text to backend', err);
+            failCount++;
+            this.errorMessage = `${failCount} text file(s) could not be saved.`;
+          },
+        });
+    });
   }
 
   /** Toggle between cleaned / original text for a file */

@@ -93,7 +93,7 @@
     </div>
   </section>
 
-  <!-- Error message -->
+  <!-- Error / success messages -->
   @if (errorMessage) {
     <p
       class="mt-3 text-sm text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-2 rounded-xl"
@@ -219,7 +219,18 @@
   </section>
 
   <!-- Actions -->
-  <section class="flex justify-end">
+  <section class="flex justify-end gap-3">
+    <!-- Upload texts to backend -->
+    <button
+      type="button"
+      (click)="uploadAllTexts()"
+      [disabled]="!hasFiles"
+      class="cursor-pointer px-4 py-2 rounded-xl text-sm font-medium bg-sky-600 hover:bg-sky-500 disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed transition delay-100 hover:scale-110"
+    >
+      Upload texts
+    </button>
+
+    <!-- Go to text analysis -->
     <button
       type="button"
       (click)="goToTextanalyse()"

@@ -1,56 +1,58 @@
-# textanalyse_backend/services/pipeline.py
 from typing import List
-import logging
+
+import numpy as np
 
 from ..schemas.textanalyse import (
-    AnalyzeRequest,
+    TextDocument,
+    TextAnalysisOptions,
     TextAnalysisResult,
     ClusterInfo,
 )
 from .preprocessing import clean_documents
 from .vectorization import vectorize
 from .clustering import reduce_dimensions, kmeans_cluster, top_terms_per_cluster
+from .wordclouds import generate_cluster_wordclouds  # NEW
+
+import logging
 
 logger = logging.getLogger(__name__)
 
 
-def run_pipeline(req: AnalyzeRequest) -> TextAnalysisResult:
-    """Führt die komplette Textanalyse-Pipeline aus."""
-
-    texts = [doc.content for doc in req.documents]
-    names = [doc.name for doc in req.documents]
-    opts = req.options
-
-    # Logging JETZT, wo opts existiert
+def run_pipeline(
+    documents: List[TextDocument],
+    opts: TextAnalysisOptions,
+) -> TextAnalysisResult:
     logger.info(
         "Starte Pipeline: %d Dokumente, vectorizer=%s, clusters=%d",
-        len(req.documents),
+        len(documents),
         opts.vectorizer,
         opts.numClusters,
     )
 
-    # 1. Vorverarbeitung
+    texts = [doc.content for doc in documents]
+    names = [doc.name for doc in documents]
+
     cleaned = clean_documents(texts)
 
-    # 2. Vektorisierung (vectorizer ist bei dir aktuell ein string)
+    stopword_mode = getattr(opts, "stopwordMode", "de")
+    if not getattr(opts, "useStopwords", True):
+        stopword_mode = "none"
+
     X, feature_names = vectorize(
         cleaned,
-        mode=opts.vectorizer,          # "bow" | "tf" | "tfidf"
+        mode=opts.vectorizer,
         max_features=opts.maxFeatures,
+        stopword_mode=stopword_mode,
     )
 
-    # 3. Dimensionsreduktion (optional)
     if opts.useDimReduction:
         X_red = reduce_dimensions(X, opts.numComponents)
     else:
-        # k-Means braucht ein dense array
         X_red = X.toarray()
 
-    # 4. Clustering
     k = int(opts.numClusters)
     labels = kmeans_cluster(X_red, k=k)
 
-    # 5. Typische Wörter je Cluster
     cluster_terms = top_terms_per_cluster(
         X,
         labels=labels,
@@ -59,7 +61,17 @@ def run_pipeline(req: AnalyzeRequest) -> TextAnalysisResult:
         top_n=10,
     )
 
-    # 6. Ergebnisobjekte bauen
+    try:
+        cluster_wordclouds = generate_cluster_wordclouds(
+            X,
+            labels=np.array(labels),
+            feature_names=feature_names,
+            top_n=80,
+        )
+    except Exception as e:  
+        logger.exception("Fehler bei der Wordcloud-Erzeugung: %s", e)
+        cluster_wordclouds = {}
+
     clusters: List[ClusterInfo] = []
     for cluster_id in range(k):
         doc_indices = [i for i, lab in enumerate(labels) if lab == cluster_id]
@@ -68,6 +80,7 @@ def run_pipeline(req: AnalyzeRequest) -> TextAnalysisResult:
                 id=cluster_id,
                 documentNames=[names[i] for i in doc_indices],
                 topTerms=cluster_terms[cluster_id],
+                wordCloudPng=cluster_wordclouds.get(cluster_id),
             )
         )
 

@@ -8,8 +8,8 @@ export type UploadedTextFile = {
   isLoading: boolean;
   error?: string;
   isOpen?: boolean;
-  dbId?: number; // Primärschlüssel in der SQLite-DB
-  backendStatus?: 'pending' | 'saved' | 'error';
+  backendStatus?: 'none' | 'pending' | 'saved' | 'error';
+  dbId?: number;
 };
 
 @Injectable({
