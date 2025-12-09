@@ -8,6 +8,7 @@ import {
   toggleCleanMode as toggleCleanModeHelper,
   toggleOpen as toggleOpenHelper,
 } from '../../__common/helper';
+import { TextsApiService } from '../../api/texts_api.service'; // NEW: backend text API
 import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiarism-session';
 
 @Component({
@@ -29,7 +30,8 @@ export class Input {
 
   constructor(
     private session: PlagiarismSessionService,
-    private router: Router, // <-- HIER hinzufügen
+    private router: Router,
+    private textsApi: TextsApiService, // NEW: inject API service
   ) {
     this.files = this.session.files;
   }
@@ -74,7 +76,7 @@ export class Input {
     const file = item.file;
     const reader = new FileReader();
 
-    // Welche Endungen behandeln wir als „Text“?
+    // Which extensions do we treat as plain text?
     const textExtensions = ['.txt', '.md', '.rtf', '.odt'];
     const lowerName = file.name.toLowerCase();
 
@@ -82,8 +84,8 @@ export class Input {
       file.type.startsWith('text/') || textExtensions.some((ext) => lowerName.endsWith(ext));
 
     if (!isTextLike) {
-      // Für PDFs, DOCX usw. keine echte Textvorschau
-      item.content = 'Vorschau für diesen Dateityp ist aktuell nicht verfügbar.';
+      // For PDFs, DOCX etc. we currently do not show a real text preview
+      item.content = 'Preview for this file type is currently not available.';
       item.cleanedContent = item.content;
       item.isLoading = false;
       return;
@@ -91,25 +93,49 @@ export class Input {
 
     reader.onload = () => {
       item.content = (reader.result as string) ?? '';
-      // direkt bereinigte Version erzeugen
+      // create cleaned version directly
       item.cleanedContent = cleanText(item.content);
       item.isLoading = false;
+
+      // NEW: send original content to backend DB
+      this.saveTextToBackend(item);
     };
 
     reader.onerror = () => {
-      item.error = 'Fehler beim Lesen der Datei.';
+      item.error = 'Error while reading the file.';
       item.isLoading = false;
     };
 
     reader.readAsText(file, 'utf-8');
   }
 
-  /** Umschalten zwischen bereinigt / original für eine Datei */
+  /** Persist the uploaded text in the backend database */
+  private saveTextToBackend(item: UploadedTextFile) {
+    if (!item.content) return;
+
+    this.textsApi
+      .createText({
+        name: item.file.name,
+        content: item.content,
+      })
+      .subscribe({
+        next: () => {
+          // Keep the message short; you can refine this later if you like
+          this.successMessage = `Text "${item.file.name}" was saved in the database.`;
+        },
+        error: (err) => {
+          console.error('Error while saving text to backend', err);
+          this.errorMessage = 'At least one text could not be saved to the backend.';
+        },
+      });
+  }
+
+  /** Toggle between cleaned / original text for a file */
   toggleCleanMode(item: UploadedTextFile) {
     toggleCleanModeHelper(item);
   }
 
-  /** Text, der tatsächlich für Vergleich etc. verwendet werden soll */
+  /** Text that should actually be used for comparison etc. */
   getTextForComparison(item: UploadedTextFile): string {
     return getTextForComparisonHelper(item);
   }
@@ -157,7 +183,7 @@ export class Input {
   }
 
   goToTextanalyse() {
-    // direkt zur Textanalyse-Seite navigieren
+    // navigate directly to the text analysis page
     this.router.navigate(['/textanalyse']);
   }
 
@@ -167,7 +193,7 @@ export class Input {
 
   toggleOpen(item: UploadedTextFile) {
     toggleOpenHelper(item);
-    this.debugMessage = `Datei "${item.file.name}" ist vom Typ "${item.file.type}" und hat die Endung "${item.file.name
+    this.debugMessage = `File "${item.file.name}" is of type "${item.file.type}" and has extension "${item.file.name
       .split('.')
       .pop()}"`;
   }

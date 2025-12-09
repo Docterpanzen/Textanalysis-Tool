@@ -5,7 +5,7 @@ description = "Default template for PDM package"
 authors = [
     {name = "Docterpanzen", email = "ko5099@mci4me.at"},
 ]
-dependencies = ["fastapi>=0.124.0", "uvicorn[standart]>=0.38.0", "scikit-learn>=1.7.2", "numpy>=2.3.5"]
+dependencies = ["fastapi>=0.124.0", "uvicorn[standart]>=0.38.0", "scikit-learn>=1.7.2", "numpy>=2.3.5", "sqlalchemy>=2.0.44"]
 requires-python = "==3.11.*"
 readme = "README.md"
 license = {text = "MIT"}
