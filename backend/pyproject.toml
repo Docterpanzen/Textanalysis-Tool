@@ -1,0 +1,15 @@
+[project]
+name = "textanalyse"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [
+    {name = "Docterpanzen", email = "ko5099@mci4me.at"},
+]
+dependencies = ["fastapi>=0.124.0", "uvicorn[standart]>=0.38.0", "scikit-learn>=1.7.2", "numpy>=2.3.5"]
+requires-python = "==3.11.*"
+readme = "README.md"
+license = {text = "MIT"}
+
+
+[tool.pdm]
+distribution = false
