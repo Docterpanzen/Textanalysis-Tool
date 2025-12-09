@@ -7,11 +7,16 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 - [Textanalyse](#textanalyse)
   - [Inhaltsverzeichnis](#inhaltsverzeichnis)
   - [Kurzbeschreibung](#kurzbeschreibung)
-  - [Herunterladen relevanter Sachen](#herunterladen-relevanter-sachen)
+  - [Frontend Abhängigkeiten installieren und starten](#frontend-abhängigkeiten-installieren-und-starten)
     - [Node.Js installieren](#nodejs-installieren)
     - [Angular Cli installieren](#angular-cli-installieren)
     - [Projektabhängigkeiten Installieren](#projektabhängigkeiten-installieren)
-    - [Projekt starten](#projekt-starten)
+    - [Projekt starten (frontend)](#projekt-starten-frontend)
+  - [Backend Abhängigkeiten installieren und starten](#backend-abhängigkeiten-installieren-und-starten)
+    - [1. Wechsle den Ordner zu backend](#1-wechsle-den-ordner-zu-backend)
+    - [2. installiere Projektabhängigkeiten über den PDM-Packetmanager](#2-installiere-projektabhängigkeiten-über-den-pdm-packetmanager)
+    - [3. Service starten](#3-service-starten)
+    - [4. API-Verbindung](#4-api-verbindung)
   - [Fragen und Anregungen](#fragen-und-anregungen)
 
 ## Kurzbeschreibung
@@ -20,7 +25,7 @@ This Project is for the course Datenbasierte Methoden und Softwaredesign und kom
 
 Wie man die Angular App startet und alle zugehärigen Sachen runterlädt sind in folgendem beschrieben.
 
-## Herunterladen relevanter Sachen
+## Frontend Abhängigkeiten installieren und starten
 
 ### Node.Js installieren
 
@@ -59,7 +64,7 @@ npm install
 npm i
 ```
 
-### Projekt starten
+### Projekt starten (frontend)
 
 Entweder durch das Vorgefertigte NPM-Skript im Projekt welches in dem package.json liegt oder durch den Angular-Befehl
 
@@ -69,6 +74,71 @@ ng serve -o (startet direkt die Webapp in einem Webbrowser)
 ```
 
 sobald der Server läuft, öffne den Browser und navigiere zu `http://localhost:4200/`. Die Anwendung wird automatisch ne geladen, solbald Sie eine der Dateien des source-codes ändern.
+
+## Backend Abhängigkeiten installieren und starten
+
+### 1. Wechsle den Ordner zu backend
+
+```bash
+cd backend
+```
+
+### 2. installiere Projektabhängigkeiten über den PDM-Packetmanager
+
+```bash
+pdm install
+```
+
+### 3. Service starten
+
+```bash
+pdm run uvicorn textanalyse_backend.main:app --reload --port 8000
+```
+
+Backend läuft unter folgendem Port
+
+```bash
+http://localhost:8000
+```
+
+### 4. API-Verbindung
+
+Die API ruft anschließend folgende Route im Backend auf:
+
+```bash
+POST http://localhost:8000/analyze
+```
+
+```bash
+{
+  "documents": [
+    { "name": "doc1.txt", "content": "..." },
+    { "name": "doc2.txt", "content": "..." }
+  ],
+  "options": {
+    "vectorizer": "tfidf",
+    "maxFeatures": 5000,
+    "numClusters": 5,
+    "useDimReduction": true,
+    "numComponents": 100
+  }
+}
+```
+
+Die Antwort lautet dann:
+
+```bash
+{
+  "clusters": [
+    {
+      "id": 0,
+      "documentNames": ["doc1.txt"],
+      "topTerms": ["...", "..."]
+    }
+  ],
+  "vocabularySize": 1234
+}
+```
 
 ## Fragen und Anregungen
 

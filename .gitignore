@@ -41,3 +41,17 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+
+# backend
+.py[cod]
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.pdm-python
+/backend/.venv
+
+backend/.venv/
+backend/__pycache__/
+backend/.pdm-python

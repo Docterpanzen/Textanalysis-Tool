@@ -1,3 +1,4 @@
+// src/app/pages/textanalyse/textanalyse.ts
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -10,18 +11,14 @@ import {
 } from '../../__common/helper';
 import { PlagiarismSessionService, UploadedTextFile } from '../../core/plagiarism-session';
 
-type VectorizerType = 'bow' | 'tf' | 'tfidf';
-
-interface ClusterInfo {
-  id: number;
-  documentNames: string[];
-  topTerms: string[];
-}
-
-interface TextAnalysisResult {
-  clusters: ClusterInfo[];
-  vocabularySize: number;
-}
+// API-Typen + Service importieren
+import {
+  AnalyzeRequest,
+  TextanalysisApiService,
+  TextAnalysisOptions,
+  TextAnalysisResult,
+  VectorizerType,
+} from '../../api/textanalyse_api.service';
 
 @Component({
   selector: 'app-textanalyse',
@@ -31,7 +28,7 @@ interface TextAnalysisResult {
   styleUrl: './textanalyse.css',
 })
 export class Textanalyse {
-  // Session-Dateien
+  // Dateien aus der Session
   get files(): UploadedTextFile[] {
     return this.session.files;
   }
@@ -45,23 +42,25 @@ export class Textanalyse {
   errorMessage: string | null = null;
   result: TextAnalysisResult | null = null;
 
-  // Pipeline-Parameter (Frontend)
+  // Pipeline-Parameter (werden ans Backend geschickt)
   vectorizer: VectorizerType = 'tfidf';
   maxFeatures: number | null = 5000;
   numClusters = 3;
   useDimReduction = true;
-  numComponents: number | null = 100; // aktuell nur Info
+  numComponents: number | null = 100;
 
   constructor(
     private router: Router,
     public session: PlagiarismSessionService,
+    private api: TextanalysisApiService,
   ) {}
 
+  // Navigation
   goToInput() {
     this.router.navigate(['/input']);
   }
 
-  // Helper-Wrapper für Template
+  // Helper-Wrapper fürs Template
   formatSize(bytes: number): string {
     return formatSize(bytes);
   }
@@ -78,6 +77,25 @@ export class Textanalyse {
     return getTextForComparison(item);
   }
 
+  // Payload für Backend bauen
+  private buildPayload(): AnalyzeRequest {
+    const documents = this.files.map((f) => ({
+      name: f.file.name,
+      content: getTextForComparison(f),
+    }));
+
+    const options: TextAnalysisOptions = {
+      vectorizer: this.vectorizer,
+      maxFeatures: this.maxFeatures,
+      numClusters: this.numClusters,
+      useDimReduction: this.useDimReduction,
+      numComponents: this.numComponents,
+    };
+
+    return { documents, options };
+  }
+
+  // Analyse starten (jetzt über Backend)
   startAnalysis() {
     if (!this.hasFiles) {
       this.errorMessage = 'Bitte zuerst Dateien im Tab „Input“ hochladen.';
@@ -86,111 +104,21 @@ export class Textanalyse {
     }
 
     this.errorMessage = null;
+    this.result = null;
     this.isLoading = true;
 
-    this.result = this.runLocalAnalysis();
+    const payload = this.buildPayload();
 
-    this.isLoading = false;
-  }
-
-  /** sehr einfache BoW/TF/TF-IDF-Analyse im Browser (Demo) */
-  private runLocalAnalysis(): TextAnalysisResult {
-    const docs = this.files.map((f) => ({
-      name: f.file.name,
-      content: getTextForComparison(f),
-    }));
-
-    const tokenizedDocs: string[][] = [];
-    const docNames: string[] = [];
-
-    for (const doc of docs) {
-      const tokens = doc.content
-        .toLowerCase()
-        .replace(/[^\p{L}\p{N}\s]/gu, ' ')
-        .split(/\s+/)
-        .filter((t) => t.length > 0);
-
-      tokenizedDocs.push(tokens);
-      docNames.push(doc.name);
-    }
-
-    const vocabSet = new Set<string>();
-    const docFreq = new Map<string, number>();
-
-    tokenizedDocs.forEach((tokens) => {
-      const unique = new Set(tokens);
-      unique.forEach((term) => {
-        vocabSet.add(term);
-        docFreq.set(term, (docFreq.get(term) ?? 0) + 1);
-      });
+    this.api.analyze(payload).subscribe({
+      next: (res) => {
+        this.result = res;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Fehler bei der Analyse. Läuft das Backend auf http://localhost:8000?';
+        this.isLoading = false;
+      },
     });
-
-    const vocabularySize = vocabSet.size;
-    const numDocs = tokenizedDocs.length;
-
-    const docWeights: Map<string, number>[] = [];
-
-    tokenizedDocs.forEach((tokens) => {
-      const counts = new Map<string, number>();
-      tokens.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1));
-
-      const totalTokens = tokens.length || 1;
-      const weights = new Map<string, number>();
-
-      counts.forEach((count, term) => {
-        let weight: number;
-
-        if (this.vectorizer === 'bow') {
-          weight = count;
-        } else if (this.vectorizer === 'tf') {
-          weight = count / totalTokens;
-        } else {
-          const tf = count / totalTokens;
-          const df = docFreq.get(term) ?? 1;
-          const idf = Math.log((numDocs + 1) / (df + 1)) + 1;
-          weight = tf * idf;
-        }
-
-        weights.set(term, weight);
-      });
-
-      docWeights.push(weights);
-    });
-
-    // Mock-Clustering: Round-Robin
-    const k = Math.max(1, this.numClusters || 1);
-    const clusters: ClusterInfo[] = [];
-
-    for (let clusterIdx = 0; clusterIdx < k; clusterIdx++) {
-      const docIndices: number[] = [];
-      for (let i = 0; i < docNames.length; i++) {
-        if (i % k === clusterIdx) {
-          docIndices.push(i);
-        }
-      }
-
-      const docNamesInCluster = docIndices.map((i) => docNames[i]);
-
-      const agg = new Map<string, number>();
-      docIndices.forEach((i) => {
-        const weights = docWeights[i];
-        weights.forEach((w, term) => {
-          agg.set(term, (agg.get(term) ?? 0) + w);
-        });
-      });
-
-      const sortedTerms = Array.from(agg.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(([term]) => term);
-
-      clusters.push({
-        id: clusterIdx + 1,
-        documentNames: docNamesInCluster,
-        topTerms: sortedTerms,
-      });
-    }
-
-    return { clusters, vocabularySize };
   }
 }
