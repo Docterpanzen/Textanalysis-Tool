@@ -8,13 +8,14 @@ export type UploadedTextFile = {
   isLoading: boolean;
   error?: string;
   isOpen?: boolean;
+  backendStatus?: 'none' | 'pending' | 'saved' | 'error';
+  dbId?: number;
 };
 
 @Injectable({
   providedIn: 'root',
 })
 export class PlagiarismSessionService {
-  // Eine gemeinsame Array-Instanz, die im ganzen Programm verwendet wird
   readonly files: UploadedTextFile[] = [];
 
   clear() {

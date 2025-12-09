@@ -1,4 +1,3 @@
-# backend/textanalyse_backend/services/clustering.py
 from typing import List, Iterable
 import numpy as np
 from sklearn.cluster import KMeans
@@ -25,12 +24,21 @@ def kmeans_cluster(
 
 
 def top_terms_per_cluster(
-    X: csr_matrix,
+    X,
     labels: Iterable[int],
     feature_names: list[str],
     k: int,
     top_n: int = 10,
 ) -> list[list[str]]:
+    """
+    Bestimmt für jeden Cluster die wichtigsten Terme.
+    Erwartet eine Sparse-Matrix X (beliebiges Format) und Clusterlabels.
+    """
+
+    # WICHTIG: Auf CSR konvertieren, damit X[idx] funktioniert
+    if not isinstance(X, csr_matrix):
+        X = csr_matrix(X)
+
     labels = np.asarray(labels)
     clusters: list[list[str]] = []
 
@@ -39,8 +47,17 @@ def top_terms_per_cluster(
         if len(idx) == 0:
             clusters.append([])
             continue
+
+        # Jetzt funktioniert das Indexing
         cluster_matrix = X[idx]
+
+        # Mittelwert pro Feature im Cluster
         mean_vec = np.asarray(cluster_matrix.mean(axis=0)).ravel()
+
+        # Top-N Terme
         top_idx = mean_vec.argsort()[::-1][:top_n]
-        clusters.append([feature_names[i] for i in top_idx if mean_vec[i] > 0])
+        terms = [feature_names[i] for i in top_idx if mean_vec[i] > 0]
+
+        clusters.append(terms)
+
     return clusters

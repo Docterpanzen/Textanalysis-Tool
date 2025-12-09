@@ -1,55 +1,77 @@
-# backend/textanalyse_backend/api/textanalyse.py
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, Depends, status
+from sqlalchemy.orm import Session
+
 from ..schemas.textanalyse import (
     AnalyzeRequest,
+    AnalyzeByIdsRequest,
     TextAnalysisResult,
-    ClusterInfo,
 )
-from ..services.preprocessing import clean_documents
-from ..services.vectorization import vectorize
-from ..services.clustering import reduce_dimensions, kmeans_cluster, top_terms_per_cluster
+from ..services.pipeline import run_pipeline
+from ..services.db_helpers import load_documents_by_ids
+from ..db.session import get_db
 
+# <--- WICHTIG: dieses 'router' importiert deine main.py
 router = APIRouter(prefix="/analyze", tags=["textanalyse"])
+
 
 @router.post("", response_model=TextAnalysisResult)
 def analyze(req: AnalyzeRequest) -> TextAnalysisResult:
-    texts = [doc.content for doc in req.documents]
-    names = [doc.name for doc in req.documents]
-    opts = req.options
+    """
+    Analyze raw documents (name + content) that are sent directly from the frontend.
+    This is the original workflow without database IDs.
+    """
 
-    cleaned = clean_documents(texts)
-
-    X, feature_names = vectorize(
-        cleaned,
-        mode=opts.vectorizer,      # "bow" | "tf" | "tfidf"
-        max_features=opts.maxFeatures,
-    )
-
-    X_red = reduce_dimensions(X, opts.numComponents if opts.useDimReduction else None)
-
-    k = opts.numClusters or 1
-    labels = kmeans_cluster(X_red, k=k)
-
-    cluster_terms = top_terms_per_cluster(
-        X,
-        labels=labels,
-        feature_names=feature_names,
-        k=k,
-        top_n=10,
-    )
-
-    clusters: list[ClusterInfo] = []
-    for cluster_id in range(k):
-        doc_indices = [i for i, lab in enumerate(labels) if lab == cluster_id]
-        clusters.append(
-            ClusterInfo(
-                id=cluster_id,
-                documentNames=[names[i] for i in doc_indices],
-                topTerms=cluster_terms[cluster_id],
-            )
+    if len(req.documents) > 200:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Zu viele Dokumente (max. 200).",
         )
 
-    return TextAnalysisResult(
-        clusters=clusters,
-        vocabularySize=len(feature_names),
-    )
+    total_chars = sum(len(d.content) for d in req.documents)
+    if total_chars > 2_000_000:  # ~2 MB text
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail="Zu viel Textinhalt (max. ca. 2 MB).",
+        )
+
+    try:
+        # Pipeline bekommt explizit die Dokumente + Optionen
+        return run_pipeline(req.documents, req.options)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ungültige Parameter für Analyse: {e}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unerwarteter Fehler bei der Analyse.",
+        ) from e
+
+
+@router.post("/byIds", response_model=TextAnalysisResult)
+def analyze_by_ids(
+    req: AnalyzeByIdsRequest,
+    db: Session = Depends(get_db),
+) -> TextAnalysisResult:
+    """
+    Analyze texts by database IDs instead of raw uploaded content.
+    This is used by the Textanalyse-Seite im Frontend.
+    """
+
+    # 1) Texte aus DB holen und in TextDocument-Objekte umwandeln
+    documents = load_documents_by_ids(db, req.text_ids)
+
+    # 2) Pipeline aufrufen (gleiche Funktion wie oben)
+    try:
+        return run_pipeline(documents, req.options)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Ungültige Parameter für Analyse: {e}",
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Unerwarteter Fehler bei der Analyse.",
+        ) from e

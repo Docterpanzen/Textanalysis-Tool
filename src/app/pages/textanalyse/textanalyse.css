@@ -1,0 +1,29 @@
+/* Container gets a class when dragging */
+.resizing .resize-handle {
+  background: rgba(0, 122, 204, 0.85) !important;
+  box-shadow: 0 0 12px rgba(0, 122, 204, 1) !important;
+}
+
+/* Resize handle – VS Code style */
+.resize-handle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6px;
+  height: 100%;
+  cursor: ew-resize;
+  background: transparent;
+  transition:
+    background 0.15s,
+    box-shadow 0.15s;
+}
+
+.resize-handle:hover {
+  background: rgba(0, 122, 204, 0.7);
+  box-shadow: 0 0 10px rgba(0, 122, 204, 0.9);
+}
+
+.resize-handle:active {
+  background: rgba(0, 122, 204, 0.9);
+  box-shadow: 0 0 14px rgba(0, 122, 204, 1);
+}

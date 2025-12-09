@@ -1,11 +1,42 @@
-# backend/textanalyse_backend/main.py
+# textanalyse_backend/main.py
+import logging
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
 from .api.textanalyse import router as textanalyse_router
+from .api.texts import router as texts_router
 from .config import settings
 
-app = FastAPI(title="Textanalyse Backend")
+from .db.session import engine
+from .db import models
 
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
+
+
+# Lifespan-Handler (Startup + Shutdown)
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Initialisiere Datenbank (SQLite)…")
+    models.Base.metadata.create_all(bind=engine)
+    logger.info("Datenbank-Tabellen sind bereit.")
+
+    yield  # <<<<< hier läuft die App
+
+    logger.info("Server fährt herunter…")
+    # falls du später Cleanup brauchst: hier einbauen
+
+
+# Erstelle FastAPI-App mit Lifespan
+app = FastAPI(title="Textanalyse Backend", lifespan=lifespan)
+
+
+# CORS-Konfiguration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.frontend_origin],
@@ -14,4 +45,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+# API-Router einbinden
 app.include_router(textanalyse_router)
+app.include_router(texts_router) 
+
+logger.info("Textanalyse Backend gestartet")
