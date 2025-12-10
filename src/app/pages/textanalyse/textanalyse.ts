@@ -23,41 +23,8 @@ import {
 })
 export class Textanalyse implements OnInit {
   // Drawer width
-  selectionPanelWidth = 380; // default width in px
+  selectionPanelWidth = 400; // default width in px
   isResizing = false;
-
-  startResizing(event: MouseEvent) {
-    this.isResizing = true;
-
-    // add css class to body so blue bar stays active
-    document.body.classList.add('resizing');
-
-    event.preventDefault();
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      if (!this.isResizing) return;
-
-      const newWidth = window.innerWidth - moveEvent.clientX;
-
-      const min = 260;
-      const max = 900;
-
-      this.selectionPanelWidth = Math.min(Math.max(newWidth, min), max);
-    };
-
-    const onMouseUp = () => {
-      this.isResizing = false;
-
-      // remove resizing class
-      document.body.classList.remove('resizing');
-
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }
 
   // texts loaded from DB
   dbTexts: TextRecord[] = [];
@@ -68,6 +35,7 @@ export class Textanalyse implements OnInit {
   isLoading = false;
   errorMessage: string | null = null;
   result: TextAnalysisResult | null = null;
+  lastAnalysisFinishedAt: Date | null = null;
 
   // analysis options sent to backend
   vectorizer: VectorizerType = 'tfidf';
@@ -76,11 +44,11 @@ export class Textanalyse implements OnInit {
   useDimReduction = true;
   numComponents: number | null = 100;
 
-  // NEW: stopword options
+  // stopword options
   useStopwords = true;
   stopwordMode: 'de' | 'en' | 'de_en' | 'none' = 'de';
 
-  // NEW: UI state for the selection drawer
+  // UI state for the selection drawer
   showSelectionPanel = false;
 
   constructor(
@@ -92,12 +60,39 @@ export class Textanalyse implements OnInit {
     this.loadTextsFromDb();
   }
 
-  /** Navigate back to Input page to add more texts */
+  // ---------- Drawer-Resize ----------
+  startResizing(event: MouseEvent) {
+    this.isResizing = true;
+    document.body.classList.add('resizing');
+    event.preventDefault();
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      if (!this.isResizing) return;
+
+      const newWidth = window.innerWidth - moveEvent.clientX;
+      const min = 260;
+      const max = 1000;
+
+      this.selectionPanelWidth = Math.min(Math.max(newWidth, min), max);
+    };
+
+    const onMouseUp = () => {
+      this.isResizing = false;
+      document.body.classList.remove('resizing');
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+  }
+
+  // ---------- Navigation ----------
   goToInput() {
     this.router.navigate(['/input']);
   }
 
-  /** Load stored texts from backend DB */
+  // ---------- Texte laden ----------
   loadTextsFromDb() {
     this.errorMessage = null;
     this.api.listTexts().subscribe({
@@ -140,7 +135,64 @@ export class Textanalyse implements OnInit {
     return this.openTextIds.has(id);
   }
 
-  /** Build payload for backend analysis by DB text IDs */
+  // ---------- Hilfsfunktionen für Dokument-Zugriff ----------
+  private findTextByName(name: string): TextRecord | undefined {
+    return this.dbTexts.find((t) => t.name === name);
+  }
+
+  private openTextRecord(txt: TextRecord) {
+    const content = txt.content ?? '';
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
+  private downloadTextRecord(txt: TextRecord) {
+    const content = txt.content ?? '';
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = txt.name || `text_${txt.id}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    setTimeout(() => URL.revokeObjectURL(url), 10_000);
+  }
+
+  // Wird aus dem Ergebnisbereich (Cluster-Liste) aufgerufen
+  openTextFromResult(name: string, event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    const txt = this.findTextByName(name);
+    if (!txt) {
+      console.warn('Kein Text für Namen gefunden:', name);
+      return;
+    }
+    this.openTextRecord(txt);
+  }
+
+  downloadTextFromResult(name: string, event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+
+    const txt = this.findTextByName(name);
+    if (!txt) {
+      console.warn('Kein Text für Namen gefunden:', name);
+      return;
+    }
+    this.downloadTextRecord(txt);
+  }
+
+  // ---------- Payload für Analyse ----------
   private buildPayload(): AnalyzeByIdsRequest {
     const options: TextAnalysisOptions = {
       vectorizer: this.vectorizer,
@@ -148,8 +200,6 @@ export class Textanalyse implements OnInit {
       numClusters: this.numClusters,
       useDimReduction: this.useDimReduction,
       numComponents: this.numComponents,
-
-      // NEW: pass stopword configuration to backend
       useStopwords: this.useStopwords,
       stopwordMode: this.stopwordMode,
     };
@@ -160,7 +210,7 @@ export class Textanalyse implements OnInit {
     };
   }
 
-  /** Start analysis based on selected DB texts */
+  // ---------- Analyse starten ----------
   startAnalysis() {
     if (this.selectedTextIds.size < 2) {
       this.errorMessage = 'Bitte mindestens zwei Texte für die Analyse auswählen.';
@@ -171,6 +221,7 @@ export class Textanalyse implements OnInit {
     this.errorMessage = null;
     this.result = null;
     this.isLoading = true;
+    this.lastAnalysisFinishedAt = null;
 
     const payload = this.buildPayload();
 
@@ -178,6 +229,7 @@ export class Textanalyse implements OnInit {
       next: (res) => {
         this.result = res;
         this.isLoading = false;
+        this.lastAnalysisFinishedAt = new Date();
       },
       error: (err) => {
         console.error(err);
