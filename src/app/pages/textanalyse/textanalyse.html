@@ -15,19 +15,22 @@
       >
         Neue Texte hinzufügen
       </button>
-
-      <!-- NEW: open selection drawer -->
-      <button
-        type="button"
-        (click)="showSelectionPanel = true"
-        class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-sm font-medium cursor-pointer transition delay-100 hover:scale-110 border border-slate-600"
-      >
-        Texte auswählen
-      </button>
     </div>
   </header>
 
-  <!-- ----------- TEXT SELECTION SUMMARY ---------------- -->
+  <!-- Global loading info -->
+  @if (isLoading) {
+    <div
+      class="mb-4 inline-flex items-center gap-2 rounded-xl bg-sky-900/40 border border-sky-700/60 px-3 py-2 text-xs text-sky-100"
+    >
+      <span
+        class="inline-block w-4 h-4 border-2 border-sky-300 border-t-transparent rounded-full animate-spin"
+      ></span>
+      <span>Analyse läuft … je nach Textmenge kann dies einige Sekunden dauern.</span>
+    </div>
+  }
+
+  <!-- Auswahl der Texte (Summary) -->
   <section
     class="my-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex items-center justify-between"
   >
@@ -55,12 +58,11 @@
     </button>
   </section>
 
-  <!-- ----------- SELECTION DRAWER (from right) ---------------- -->
+  <!-- SELECTION DRAWER (unverändert: nur Auswahl + Preview) -->
   @if (showSelectionPanel) {
     <div class="fixed inset-0 z-40 flex justify-end bg-slate-950/70">
       <div class="flex-1" (click)="showSelectionPanel = false"></div>
 
-      <!-- DRAWER (RESIZABLE) -->
       <div
         class="h-full bg-slate-900 border-l border-slate-800 shadow-xl flex flex-col relative"
         [ngStyle]="{ width: selectionPanelWidth + 'px' }"
@@ -136,7 +138,7 @@
                   <!-- Collapsible preview -->
                   @if (isOpen(txt.id)) {
                     <div
-                      class="mt-2 rounded-lg bg-slate-900 border border-slate-700 p-2 space-y-2 max-h-80 overflow-y-auto"
+                      class="mt-2 rounded-lg bg-slate-900 border border-slate-700 p-2 space-y-2 max-h-100 overflow-y-auto"
                     >
                       @if (!txt.content) {
                         <p class="text-xs text-slate-500">
@@ -162,7 +164,7 @@
           <button
             type="button"
             (click)="showSelectionPanel = false"
-            class="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-medium"
+            class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-medium transition delay-100 hover:scale-110"
           >
             Auswahl übernehmen
           </button>
@@ -171,7 +173,7 @@
     </div>
   }
 
-  <!-- ----------- PIPELINE SETTINGS ---------------- -->
+  <!-- PIPELINE SETTINGS -->
   <section class="my-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
     <h2 class="text-sm font-medium text-slate-200">Pipeline-Einstellungen</h2>
 
@@ -187,13 +189,6 @@
           <option value="tf">Term Frequency (TF)</option>
           <option value="tfidf">TF-IDF</option>
         </select>
-        @if (vectorizer === 'bow') {
-          <p class="mt-1 text-[11px] text-slate-500">BoW: rohe Häufigkeit.</p>
-        } @else if (vectorizer === 'tf') {
-          <p class="mt-1 text-[11px] text-slate-500">TF: normierte Häufigkeit.</p>
-        } @else if (vectorizer === 'tfidf') {
-          <p class="mt-1 text-[11px] text-slate-500">TF-IDF: betont seltene, informative Wörter.</p>
-        }
       </div>
 
       <!-- Max features -->
@@ -219,9 +214,6 @@
           [(ngModel)]="numClusters"
           class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
         />
-        <p class="mt-1 text-[11px] text-slate-500">
-          Anzahl der Cluster für k-Means. Typisch z.B. 3–10.
-        </p>
       </div>
 
       <!-- Dimensionality reduction -->
@@ -238,15 +230,10 @@
             [(ngModel)]="numComponents"
             class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
           />
-          <p class="mt-1 text-[11px] text-slate-500">Ziel-Dimensionen, z.B. 50 oder 100.</p>
-        } @else {
-          <p class="mt-1 text-[11px] text-slate-500">
-            Ohne Dimensionsreduktion wird direkt im Vollraum geclustert.
-          </p>
         }
       </div>
 
-      <!-- NEW: Stopword settings -->
+      <!-- Stopword settings -->
       <div>
         <label class="flex items-center gap-2 text-xs text-slate-400 mb-1">
           <input type="checkbox" [(ngModel)]="useStopwords" class="rounded" />
@@ -284,10 +271,21 @@
         @if (!isLoading) {
           Analyse starten
         } @else {
-          Analysiere ...
+          <span class="inline-flex items-center gap-2">
+            <span
+              class="inline-block w-4 h-4 border-2 border-slate-200 border-t-transparent rounded-full animate-spin"
+            ></span>
+            Analysiere …
+          </span>
         }
       </button>
     </div>
+
+    @if (lastAnalysisFinishedAt && !isLoading) {
+      <p class="mt-2 text-[11px] text-slate-500">
+        Letzte Analyse abgeschlossen um {{ lastAnalysisFinishedAt | date: 'shortTime' }}.
+      </p>
+    }
   </section>
 
   <!-- Error message -->
@@ -299,9 +297,8 @@
     </p>
   }
 
-  <!-- ----------- ANALYSIS RESULT ---------------- -->
+  <!-- ANALYSIS RESULT (mit Wordcloud + Download/Ansehen je Dokument) -->
   @if (result) {
-    <!-- dein Ergebnis-Block wie zuvor -->
     <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
       <h2 class="text-sm font-medium text-slate-200">Cluster-Ergebnis</h2>
       <p class="text-xs text-slate-500">
@@ -334,13 +331,35 @@
               </div>
             }
 
-            <p class="text-xs text-slate-400">Dokumente:</p>
-            <ul class="list-disc list-inside text-[11px] text-slate-300">
+            <p class="text-xs text-slate-400 mt-2">Dokumente:</p>
+            <ul class="space-y-1 text-[11px] text-slate-300">
               @if (cluster.documentNames.length === 0) {
                 <li>(keine Dokumente zugeordnet)</li>
               } @else {
                 @for (name of cluster.documentNames; track name) {
-                  <li>{{ name }}</li>
+                  <li class="flex items-center justify-between gap-2">
+                    <span class="truncate">{{ name }}</span>
+                    <div class="flex gap-1 shrink-0">
+                      <button
+                        type="button"
+                        (click)="openTextFromResult(name, $event)"
+                        class="px-1 py-1 rounded-lg bg-slate-800 hover:bg-sky-700 text-[10px] border border-slate-600 cursor-pointer transition delay-100 hover:scale-110"
+                      >
+                        <img src="assets/Textanalyse/lens_white_icon.svg" class="w-4 h-4" alt="" />
+                      </button>
+                      <button
+                        type="button"
+                        (click)="downloadTextFromResult(name, $event)"
+                        class="px-1 py-1 rounded-lg bg-slate-800 hover:bg-sky-700 text-[10px] border border-slate-600 cursor-pointer transition delay-100 hover:scale-110"
+                      >
+                        <img
+                          src="assets/Textanalyse/download_white_icon.svg"
+                          class="w-4 h-4"
+                          alt=""
+                        />
+                      </button>
+                    </div>
+                  </li>
                 }
               }
             </ul>

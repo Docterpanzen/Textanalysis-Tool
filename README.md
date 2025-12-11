@@ -16,7 +16,16 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
     - [1. Wechsle den Ordner zu backend](#1-wechsle-den-ordner-zu-backend)
     - [2. installiere Projektabhängigkeiten über den PDM-Packetmanager](#2-installiere-projektabhängigkeiten-über-den-pdm-packetmanager)
     - [3. Service starten](#3-service-starten)
-    - [4. API-Verbindung](#4-api-verbindung)
+  - [API-Spezifikation](#api-spezifikation)
+    - [1. Texte-API](#1-texte-api)
+    - [2. Analyse über Datenbank-IDs](#2-analyse-über-datenbank-ids)
+  - [Datenbank](#datenbank)
+    - [Tabelle `texts`](#tabelle-texts)
+    - [Tabelle `analysis_runs`](#tabelle-analysis_runs)
+    - [Tabelle `analysis_run_texts`](#tabelle-analysis_run_texts)
+    - [Tabelle `clusters`](#tabelle-clusters)
+    - [Tabelle `cluster_assignments`](#tabelle-cluster_assignments)
+    - [Wie die Tabellen zusammenhängen](#wie-die-tabellen-zusammenhängen)
   - [Fragen und Anregungen](#fragen-und-anregungen)
 
 ## Kurzbeschreibung
@@ -95,50 +104,240 @@ pdm install
 pdm run uvicorn textanalyse_backend.main:app --reload --port 8000
 ```
 
+oder über das automatische Script im backend-Ordner, welches in der pyproject.toml gespeichert ist:
+
+```bash
+pdm run api
+```
+
+Pyproject.toml:
+
+```pyproject.toml
+[tool.pdm.scripts]
+test = {cmd = "pdm run pytest"}
+api = {cmd = "pdm run uvicorn textanalyse_backend.main:app --reload --port 8000"}
+```
+
 Backend läuft unter folgendem Port
 
 ```bash
 http://localhost:8000
 ```
 
-### 4. API-Verbindung
+## API-Spezifikation
 
-Die API ruft anschließend folgende Route im Backend auf:
+### 1. Texte-API
 
-```bash
-POST http://localhost:8000/analyze
+`POST /texts` – neuen Text speichern in dem Upload Tab
+
+Request-Body (JSON):
+
+```json
+{
+  "name": "beispiel.txt",
+  "content": "Vollständiger Textinhalt ..."
+}
 ```
 
-```bash
+Response (`201 Created`):
+
+```json
 {
-  "documents": [
-    { "name": "doc1.txt", "content": "..." },
-    { "name": "doc2.txt", "content": "..." }
-  ],
+  "id": 1,
+  "name": "beispiel.txt",
+  "content": "Vollständiger Textinhalt ...",
+  "created_at": "2025-12-09T20:30:00"
+}
+```
+
+`GET /texts` – Liste aller Texte
+
+Optional mit Query-Parametern:
+
+- `limit` (Standard 50)
+- `offset` (Standard 0)
+- `search` (Filter nach Name oder Inhalt)
+
+Beispiel:
+
+```text
+GET /texts?limit=20&offset=0&search=schule
+```
+
+Response (`200 OK`):
+
+```json
+[
+  {
+    "id": 1,
+    "name": "beispiel.txt",
+    "content": "...",
+    "created_at": "2025-12-09T20:30:00"
+  },
+  {
+    "id": 2,
+    "name": "bericht.txt",
+    "content": "...",
+    "created_at": "2025-12-09T20:35:00"
+  }
+]
+```
+
+`GET /texts/{id}` – einzelnen Text laden
+
+Beispiel:
+
+```text
+GET /texts/1
+```
+
+Response (`200 OK`):
+
+```json
+{
+  "id": 1,
+  "name": "beispiel.txt",
+  "content": "Vollständiger Textinhalt ...",
+  "created_at": "2025-12-09T20:30:00"
+}
+```
+
+---
+
+### 2. Analyse über Datenbank-IDs
+
+**POST** `/analyze/byIds`
+
+Frontend-Nutzung: wird von der Seite **Textanalyse** verwendet. Hier wählt der Nutzer gespeicherte Texte aus der DB aus; es werden nur die IDs übertragen.
+
+Request:
+
+```json
+{
+  "text_ids": [1, 2, 6],
   "options": {
     "vectorizer": "tfidf",
     "maxFeatures": 5000,
-    "numClusters": 5,
+    "numClusters": 3,
     "useDimReduction": true,
-    "numComponents": 100
+    "numComponents": 100,
+    "useStopwords": true,
+    "stopwordMode": "de_en"
   }
 }
 ```
 
-Die Antwort lautet dann:
+Response (`200 OK`):
 
-```bash
+```json
 {
   "clusters": [
     {
       "id": 0,
-      "documentNames": ["doc1.txt"],
-      "topTerms": ["...", "..."]
+      "documentNames": ["test1.txt", "test3.txt"],
+      "topTerms": ["analyse", "daten", "modell"],
+      "wordCloudPng": "<base64-png>"
+    },
+    {
+      "id": 1,
+      "documentNames": ["test2.txt"],
+      "topTerms": ["schule", "lernen", "projekt"],
+      "wordCloudPng": "<base64-png>"
     }
   ],
-  "vocabularySize": 1234
+  "vocabularySize": 542
 }
 ```
+
+Die Struktur der `options` entspricht exakt dem Interface `TextAnalysisOptions` im Frontend (`vectorizer`, `maxFeatures`, `numClusters`, `useDimReduction`, `numComponents`, `useStopwords`, `stopwordMode`).
+
+---
+
+## Datenbank
+
+Die Anwendung nutzt **SQLite** als eingebettete, dateibasierte Datenbank. Die Datei wird automatisch erzeugt, sobald das Backend startet – es ist kein separater DB-Server notwendig.
+
+Alle Tabellen im aktuellen Schema im Überblick:
+
+### Tabelle `texts`
+
+Enthält jeden hochgeladenen Text.
+
+| Spalte       | Typ        | Beschreibung                       |
+| ------------ | ---------- | ---------------------------------- |
+| `id`         | INTEGER PK | Primärschlüssel                    |
+| `name`       | TEXT       | Anzeigename / Dateiname des Textes |
+| `content`    | TEXT       | Vollständiger Textinhalt           |
+| `created_at` | DATETIME   | Zeitpunkt des Uploads              |
+
+---
+
+### Tabelle `analysis_runs`
+
+Speichert eine Analyse-Konfiguration und die globalen Metadaten eines Durchlaufs.
+
+| Spalte              | Typ        | Beschreibung                                  |
+| ------------------- | ---------- | --------------------------------------------- |
+| `id`                | INTEGER PK | Primärschlüssel                               |
+| `created_at`        | DATETIME   | Zeitpunkt der Analyse                         |
+| `vectorizer`        | TEXT       | Art der Vektorisierung (`bow`, `tf`, `tfidf`) |
+| `num_clusters`      | INTEGER    | Anzahl der Cluster (k)                        |
+| `use_dim_reduction` | BOOLEAN    | Ob Dimensionsreduktion verwendet wurde        |
+| `num_components`    | INTEGER    | Ziel-Dimensionen bei SVD                      |
+| `language`          | TEXT       | Sprache / Stopword-Mode (z. B. `de`, `en`)    |
+| `description`       | TEXT       | Freitext-Beschreibung (optional)              |
+
+---
+
+### Tabelle `analysis_run_texts`
+
+Verknüpft eine Analyse mit den beteiligten Texten (m:n-Beziehung).
+
+| Spalte            | Typ        | Beschreibung                   |
+| ----------------- | ---------- | ------------------------------ |
+| `id`              | INTEGER PK | Primärschlüssel                |
+| `analysis_run_id` | INTEGER FK | Verweis auf `analysis_runs.id` |
+| `text_id`         | INTEGER FK | Verweis auf `texts.id`         |
+
+---
+
+### Tabelle `clusters`
+
+Speichert die Cluster eines Analyse-Durchlaufs.
+
+| Spalte            | Typ        | Beschreibung                              |
+| ----------------- | ---------- | ----------------------------------------- |
+| `id`              | INTEGER PK | Primärschlüssel                           |
+| `analysis_run_id` | INTEGER FK | Zugehörige Analyse (`analysis_runs.id`)   |
+| `cluster_index`   | INTEGER    | Laufende Nummer des Clusters (0..k-1)     |
+| `top_terms`       | TEXT       | Wichtige Wörter des Clusters (als String) |
+| `size`            | INTEGER    | Anzahl der zugeordneten Texte             |
+
+---
+
+### Tabelle `cluster_assignments`
+
+Enthält die Zuordnung "Text gehört zu Cluster X".
+
+| Spalte       | Typ        | Beschreibung              |
+| ------------ | ---------- | ------------------------- |
+| `id`         | INTEGER PK | Primärschlüssel           |
+| `cluster_id` | INTEGER FK | Verweis auf `clusters.id` |
+| `text_id`    | INTEGER FK | Verweis auf `texts.id`    |
+
+---
+
+### Wie die Tabellen zusammenhängen
+
+1. **`texts`** enthält die Rohtexte.
+2. Ein Analyse-Lauf wird in **`analysis_runs`** angelegt.
+3. Die Zuordnung "welche Texte wurden analysiert" steht in **`analysis_run_texts`**.
+4. Die bei der Analyse gefundenen Cluster liegen in **`clusters`**.
+5. Welche Texte in welchem Cluster gelandet sind, steht in **`cluster_assignments`**.
+
+Damit lassen sich Analysen später reproduzieren, vergleichen und im Dashboard statistisch auswerten.
+
+---
 
 ## Fragen und Anregungen
 
