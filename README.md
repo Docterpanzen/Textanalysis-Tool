@@ -30,7 +30,7 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 
 ## Kurzbeschreibung
 
-This Project is for the course Datenbasierte Methoden und Softwaredesign und kombiniert hierbei die Methoden von Datenbasierte Methoden und die Softwarestruktur und Arbeitsweise von Softwaredesign. Mehr dazu in der Angular App unter dem Reiter Dokumentation.
+Dieses Projekt ist für die Kurse Datenbasierte Methoden und Softwaredesign und kombiniert hierbei die Methoden von Datenbasierte Methoden und die Softwarestruktur und Arbeitsweise von Softwaredesign. Mehr dazu in der Angular App unter dem Reiter Dokumentation.
 
 Wie man die Angular App startet und alle zugehärigen Sachen runterlädt sind in folgendem beschrieben.
 
