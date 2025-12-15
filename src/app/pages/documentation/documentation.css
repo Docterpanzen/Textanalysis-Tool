@@ -1,0 +1,46 @@
+.doc-nav-btn {
+  cursor: pointer;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.5rem;
+  transition:
+    background 120ms ease,
+    color 120ms ease;
+}
+
+.doc-nav-btn:hover {
+  background: rgba(148, 163, 184, 0.15);
+  color: #fff;
+}
+
+.doc-card {
+  border: 1px solid rgb(30 41 59);
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.doc-h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.doc-p {
+  color: rgb(203 213 225);
+}
+
+.doc-callout {
+  margin-top: 0.75rem;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  background: rgba(14, 165, 233, 0.06);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}
+
+.doc-code {
+  margin-top: 0.75rem;
+  border: 1px solid rgb(30 41 59);
+  background: rgba(2, 6, 23, 0.6);
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}

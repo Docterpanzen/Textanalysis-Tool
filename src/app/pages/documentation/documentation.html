@@ -2,232 +2,443 @@
   <!-- STICKY HEADER -->
   <div class="sticky top-0 z-20 bg-slate-900 shadow-lg border-b border-slate-700">
     <!-- HEADER -->
-    <header class="px-4 py-4">
-      <h1 class="text-3xl font-semibold">Dokumentation</h1>
+    <header class="px-4 py-4 flex items-center justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-semibold">Dokumentation</h1>
+        <p class="mt-1 text-sm text-slate-400">
+          Überblick über Methoden, Architektur und Algorithmen der Anwendung.
+        </p>
+      </div>
+
+      <!-- TOPIC SWITCH -->
+      <div class="flex gap-2">
+        <button
+          type="button"
+          (click)="setTopic('overview')"
+          class="px-3 py-2 rounded-xl text-sm font-medium border transition"
+          [class.bg-sky-600]="activeTopic === 'overview'"
+          [class.border-sky-500]="activeTopic === 'overview'"
+          [class.text-white]="activeTopic === 'overview'"
+          [class.bg-slate-900]="activeTopic !== 'overview'"
+          [class.border-slate-700]="activeTopic !== 'overview'"
+          [class.text-slate-200]="activeTopic !== 'overview'"
+          [class.hover:bg-slate-800]="activeTopic !== 'overview'"
+        >
+          Überblick
+        </button>
+
+        <button
+          type="button"
+          (click)="setTopic('textanalyse')"
+          class="px-3 py-2 rounded-xl text-sm font-medium border transition"
+          [class.bg-sky-600]="activeTopic === 'textanalyse'"
+          [class.border-sky-500]="activeTopic === 'textanalyse'"
+          [class.text-white]="activeTopic === 'textanalyse'"
+          [class.bg-slate-900]="activeTopic !== 'textanalyse'"
+          [class.border-slate-700]="activeTopic !== 'textanalyse'"
+          [class.text-slate-200]="activeTopic !== 'textanalyse'"
+          [class.hover:bg-slate-800]="activeTopic !== 'textanalyse'"
+        >
+          Textanalyse
+        </button>
+
+        <button
+          type="button"
+          (click)="setTopic('plagiatchecker')"
+          class="px-3 py-2 rounded-xl text-sm font-medium border transition"
+          [class.bg-sky-600]="activeTopic === 'plagiatchecker'"
+          [class.border-sky-500]="activeTopic === 'plagiatchecker'"
+          [class.text-white]="activeTopic === 'plagiatchecker'"
+          [class.bg-slate-900]="activeTopic !== 'plagiatchecker'"
+          [class.border-slate-700]="activeTopic !== 'plagiatchecker'"
+          [class.text-slate-200]="activeTopic !== 'plagiatchecker'"
+          [class.hover:bg-slate-800]="activeTopic !== 'plagiatchecker'"
+        >
+          Plagiatchecker
+        </button>
+      </div>
     </header>
 
-    <!-- NAVIGATION -->
-    <nav class="px-4 py-3 flex flex-wrap gap-6 text-slate-300">
-      <a
-        (click)="scrollTo('einleitung')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        Einleitung
-      </a>
-
-      <a
-        (click)="scrollTo('pipeline')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        Pipeline
-      </a>
-
-      <a
-        (click)="scrollTo('bow')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        BoW
-      </a>
-
-      <a
-        (click)="scrollTo('tfidf')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        TF &amp; TF-IDF
-      </a>
-
-      <a
-        (click)="scrollTo('dimensionsreduktion')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        Dimensionsreduktion
-      </a>
-
-      <a
-        (click)="scrollTo('clustering')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        Clustering
-      </a>
-
-      <a
-        (click)="scrollTo('vokabular')"
-        class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
-      >
-        Vokabular
-      </a>
+    <!-- SUB-NAVIGATION (topic-specific) -->
+    <nav class="px-4 py-3 flex flex-wrap gap-3 text-slate-300">
+      @if (activeTopic === 'overview') {
+        <a
+          (click)="scrollTo('ov-einleitung')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Einleitung
+        </a>
+        <a
+          (click)="scrollTo('ov-architektur')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Architektur
+        </a>
+        <a
+          (click)="scrollTo('ov-api')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          API
+        </a>
+      } @else if (activeTopic === 'textanalyse') {
+        <a
+          (click)="scrollTo('ta-einleitung')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Einleitung
+        </a>
+        <a
+          (click)="scrollTo('ta-pipeline')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Pipeline
+        </a>
+        <a
+          (click)="scrollTo('ta-vektoren')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          BoW / TF / TF-IDF
+        </a>
+        <a
+          (click)="scrollTo('ta-stoppwoerter')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Stoppwörter
+        </a>
+        <a
+          (click)="scrollTo('ta-svd')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Dimensionsreduktion
+        </a>
+        <a
+          (click)="scrollTo('ta-clustering')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Clustering
+        </a>
+        <a
+          (click)="scrollTo('ta-ergebnis')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Ergebnis
+        </a>
+      } @else {
+        <a
+          (click)="scrollTo('pl-einleitung')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Einleitung
+        </a>
+        <a
+          (click)="scrollTo('pl-shingles')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Shingles
+        </a>
+        <a
+          (click)="scrollTo('pl-minhash')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          MinHash
+        </a>
+        <a
+          (click)="scrollTo('pl-lsh')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          LSH
+        </a>
+        <a
+          (click)="scrollTo('pl-preprocessing')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Bereinigung
+        </a>
+        <a
+          (click)="scrollTo('pl-api')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          API
+        </a>
+        <a
+          (click)="scrollTo('pl-output')"
+          class="cursor-pointer px-3 py-1.5 rounded-lg hover:bg-slate-700/40 hover:text-white transition-colors"
+        >
+          Ergebnis
+        </a>
+      }
     </nav>
   </div>
 
-  <!-- INHALT – Seite scrollt ganz normal -->
+  <!-- CONTENT -->
   <main class="pt-6 space-y-6">
-    <!-- EINLEITUNG -->
-    <section
-      id="einleitung"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">Einleitung</h2>
+    <!-- ===================== OVERVIEW ===================== -->
+    @if (activeTopic === 'overview') {
+      <section
+        id="ov-einleitung"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Einleitung</h2>
+        <p>
+          Die Anwendung besteht aus zwei Hauptkomponenten:
+          <strong>Textanalyse</strong> (thematische Gruppierung von Dokumenten) und
+          <strong>Plagiatchecker</strong> (Ähnlichkeitsmessung zwischen zwei Dokumenten).
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li>
+            <strong>Textanalyse:</strong> Vektorisierung → optional SVD → Clustering → Top-Terms
+            &amp; Wordcloud
+          </li>
+          <li><strong>Plagiatchecker:</strong> Shingling → MinHash → LSH → Ähnlichkeits-Score</li>
+        </ul>
+      </section>
 
-      <p>
-        Diese Anwendung kombiniert Plagiatsanalyse und datenbasierte Textanalyse. Auf dieser Seite
-        findest du eine kompakte Übersicht über alle verwendeten Methoden und deren Bedeutung.
-      </p>
+      <section
+        id="ov-architektur"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Architektur</h2>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><strong>Frontend:</strong> Angular (standalone components), UI in Tabs/Pages</li>
+          <li><strong>Backend:</strong> FastAPI (REST), Pydantic Schemas, Services</li>
+          <li><strong>Datenbank:</strong> SQLite (Texte + Analyse-Metadaten)</li>
+          <li><strong>Kommunikation:</strong> JSON Requests/Responses über HTTP</li>
+        </ul>
+        <p class="text-slate-400 text-sm">
+          Ziel: klare Trennung zwischen UI, API-Services (Frontend) und Business-Logik (Backend
+          Services).
+        </p>
+      </section>
 
-      <ul class="list-disc list-inside space-y-1">
-        <li><strong>Bag-of-Words:</strong> Grundform der Textdarstellung</li>
-        <li><strong>TF/TF-IDF:</strong> Gewichtete Textrepräsentationen</li>
-        <li><strong>Dimensionsreduktion:</strong> Kompression &amp; Rauschunterdrückung</li>
-        <li><strong>Clustering:</strong> Gruppierung ähnlicher Dokumente</li>
-        <li><strong>Pipeline:</strong> Übersicht des gesamten Analyseprozesses</li>
-        <li><strong>Vokabular:</strong> Umgang mit neuen Texten und dynamischen Wörterlisten</li>
-      </ul>
-    </section>
+      <section
+        id="ov-api"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">API-Überblick</h2>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><code>POST /texts</code> – Text speichern</li>
+          <li><code>GET /texts</code> – Texte listen</li>
+          <li>
+            <code>GET /texts/{{ '{' }}id{{ '}' }}</code> – Einzelnen Text laden
+          </li>
+          <li><code>POST /analyze</code> – Textanalyse (direkt Inhalte senden)</li>
+          <li><code>POST /analyze/byIds</code> – Textanalyse (DB-IDs senden)</li>
+          <li><code>POST /plagiarism/check</code> – Plagiatprüfung (2 Dokumente)</li>
+        </ul>
+      </section>
+    }
 
-    <!-- PIPELINE -->
-    <section
-      id="pipeline"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">Pipeline der Textanalyse</h2>
+    <!-- ===================== TEXTANALYSE ===================== -->
+    @if (activeTopic === 'textanalyse') {
+      <section
+        id="ta-einleitung"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Textanalyse – Ziel</h2>
+        <p>
+          Die Textanalyse gruppiert mehrere Dokumente nach thematischer Ähnlichkeit. Dazu werden
+          Texte in numerische Vektoren überführt und anschließend geclustert.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li>Auswahl von Texten aus der Datenbank (IDs)</li>
+          <li>Konfiguration: Vectorizer, maxFeatures, k-Means (k), optional SVD</li>
+          <li>Ausgabe: Cluster-Zuordnung, Top-Terms, Wordcloud pro Cluster</li>
+        </ul>
+      </section>
 
-      <ol class="list-decimal list-inside space-y-2 text-slate-300">
-        <li>
-          <strong>Vorverarbeitung:</strong>
-          Texte werden bereinigt (Kleinbuchstaben, Tokenisierung, Entfernen von Sonderzeichen).
-        </li>
-        <li>
-          <strong>Vokabularerstellung:</strong>
-          Alle vorkommenden Wörter werden gesammelt und nummeriert.
-        </li>
-        <li>
-          <strong>Vektorrepräsentation:</strong>
-          Erstellung von BoW-, TF- oder TF-IDF-Vektoren.
-        </li>
-        <li>
-          <strong>Dimensionsreduktion:</strong>
-          Kompression der hochdimensionalen Vektoren (Top-k oder SVD).
-        </li>
-        <li>
-          <strong>Clustering:</strong>
-          Gruppierung ähnlicher Dokumente (z. B. mit k-Means).
-        </li>
-      </ol>
-    </section>
+      <section
+        id="ta-pipeline"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Pipeline</h2>
+        <ol class="list-decimal list-inside space-y-2 text-slate-300">
+          <li><strong>Vorverarbeitung:</strong> Normalisierung, optional Stoppwörter entfernen</li>
+          <li><strong>Vektorisierung:</strong> BoW / TF / TF-IDF</li>
+          <li><strong>Optional:</strong> Dimensionsreduktion (SVD)</li>
+          <li><strong>Clustering:</strong> k-Means</li>
+          <li><strong>Ergebnis:</strong> Cluster, Top-Terms, Wordcloud</li>
+        </ol>
+      </section>
 
-    <!-- BAG OF WORDS -->
-    <section
-      id="bow"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">Bag-of-Words (BoW)</h2>
+      <section
+        id="ta-vektoren"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">BoW / TF / TF-IDF</h2>
+        <ul class="list-disc list-inside space-y-2 text-slate-300">
+          <li>
+            <strong>BoW:</strong> Wortanzahl pro Dokument (sehr direkt, aber häufige Wörter
+            dominieren)
+          </li>
+          <li>
+            <strong>TF:</strong> BoW normiert auf Dokumentlänge (vergleichbarer zwischen
+            kurzen/lange Texten)
+          </li>
+          <li>
+            <strong>TF-IDF:</strong> reduziert sehr häufige Wörter und betont informative Wörter
+          </li>
+        </ul>
+        <p class="text-slate-400 text-sm">
+          <strong>maxFeatures</strong> begrenzt die Vokabulargröße und verhindert
+          Overfitting/Performance-Probleme.
+        </p>
+      </section>
 
-      <p>
-        Beim Bag-of-Words Modell wird gezählt, wie oft jedes Wort eines Dokuments vorkommt. Aus
-        allen Texten wird ein gemeinsames Vokabular erstellt, und jedes Dokument wird als Vektor
-        dargestellt (ein Eintrag je Wort).
-      </p>
+      <section
+        id="ta-stoppwoerter"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Stoppwörter</h2>
+        <p>
+          Stoppwörter sind häufige Funktionswörter (z. B. „und“, „der“, „the“), die meist wenig
+          thematische Information tragen. Optional können sie entfernt werden.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li>Modus: Deutsch / Englisch / Deutsch+Englisch / None</li>
+          <li>Wirksam besonders bei TF-IDF und bei gemischten Korpora</li>
+        </ul>
+      </section>
 
-      <p class="text-slate-400">
-        Beispiel:
-        <br />
-        „Datenanalyse ist wichtig“ →
-        <code>[1, 1, 1, 1, 0, …]</code>
-        (nur Häufigkeiten)
-      </p>
-    </section>
+      <section
+        id="ta-svd"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Dimensionsreduktion (SVD)</h2>
+        <p>
+          Textvektoren sind hochdimensional. SVD reduziert die Dimension (z. B. 5000 → 100) und kann
+          Rauschen entfernen. Dadurch wird Clustering oft stabiler.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><strong>numComponents:</strong> Ziel-Dimensionen (typisch 50–200)</li>
+          <li>Trade-off: weniger Dimensionen = schneller, aber evtl. Informationsverlust</li>
+        </ul>
+      </section>
 
-    <!-- TF & TF-IDF -->
-    <section
-      id="tfidf"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">TF &amp; TF-IDF</h2>
+      <section
+        id="ta-clustering"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Clustering (k-Means)</h2>
+        <p>
+          k-Means ordnet Dokumente dem nächstgelegenen Clusterzentrum zu.
+          <strong>numClusters</strong> bestimmt, wie fein das Ergebnis wird.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li>kleines k: grobe Themen</li>
+          <li>großes k: feinere Unterthemen, aber riskanter bei wenig Dokumenten</li>
+        </ul>
+      </section>
 
-      <p>
-        TF und TF-IDF sind verbesserte Versionen von Bag-of-Words. Sie gewichten Wörter nach
-        Relevanz und Informationsgehalt.
-      </p>
+      <section
+        id="ta-ergebnis"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Ergebnisdarstellung</h2>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><strong>Top-Terms:</strong> typische Wörter eines Clusters</li>
+          <li><strong>Wordcloud:</strong> visuelle Gewichtung (größer = wichtiger/häufiger)</li>
+          <li><strong>Dokumentliste:</strong> welche Texte wurden zugeordnet</li>
+        </ul>
+      </section>
+    }
 
-      <ul class="list-disc list-inside space-y-1">
-        <li>
-          <strong>TF (Term Frequency):</strong>
-          Normiert die Häufigkeit eines Wortes durch die Dokumentlänge. Dadurch werden lange und
-          kurze Texte vergleichbar.
-        </li>
-        <li>
-          <strong>TF-IDF (Term Frequency – Inverse Document Frequency):</strong>
-          Reduziert den Einfluss sehr häufiger Wörter („und“, „ist“) und hebt seltene, informative
-          Wörter hervor.
-        </li>
-      </ul>
-    </section>
+    <!-- ===================== PLAGIATCHECKER ===================== -->
+    @if (activeTopic === 'plagiatchecker') {
+      <section
+        id="pl-einleitung"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Plagiatchecker – Ziel</h2>
+        <p>
+          Der Plagiatchecker vergleicht zwei Dokumente und schätzt die Ähnlichkeit. Die Pipeline ist
+          so ausgelegt, dass sie robust gegenüber kleinen Änderungen ist (z. B. Umformulierung,
+          Satzzeichen).
+        </p>
+      </section>
 
-    <!-- DIMENSIONSREDUKTION -->
-    <section
-      id="dimensionsreduktion"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">Dimensionsreduktion</h2>
+      <section
+        id="pl-shingles"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Shingles</h2>
+        <p class="text-slate-300">
+          Ein Shingle ist ein Ausschnitt des Textes mit Länge <strong>k</strong>.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><strong>Zeichen-Shingles:</strong> robust gegen kleine Änderungen</li>
+          <li><strong>Wort-Shingles:</strong> interpretierbarer, aber empfindlicher</li>
+        </ul>
+        <p class="text-slate-400 text-sm">
+          Praxis: Zeichen-Shingles (k≈4–7) funktionieren für Plagiat-Erkennung häufig besser.
+        </p>
+      </section>
 
-      <p>
-        Textvektoren besitzen oft Tausende Dimensionen. Eine Dimensionsreduktion komprimiert diese
-        Vektoren, entfernt Rauschen und liefert bessere Ergebnisse bei Clustering und Analyse.
-      </p>
+      <section
+        id="pl-minhash"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">MinHash</h2>
+        <p>
+          MinHash approximiert die Jaccard-Ähnlichkeit der Shingle-Mengen, ohne alle Shingles
+          vollständig gegeneinander zu vergleichen.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><strong>numHashes:</strong> Länge der Signatur (mehr = stabiler, aber langsamer)</li>
+        </ul>
+      </section>
 
-      <ul class="list-disc list-inside space-y-1">
-        <li><strong>Top-k Auswahl:</strong> Nur die wichtigsten Wörter behalten.</li>
-        <li>
-          <strong>SVD / LSA:</strong> Mathematische Zerlegung der TF-IDF-Matrix in latente Themen.
-        </li>
-      </ul>
+      <section
+        id="pl-lsh"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">LSH (Locality Sensitive Hashing)</h2>
+        <p>
+          LSH teilt die MinHash-Signatur in Bänder auf. Dokumente, die in einem Band identisch sind,
+          werden als Kandidaten betrachtet.
+        </p>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li>
+            <strong>numBands</strong> &amp; <strong>numRows</strong> müssen erfüllen:
+            <code>bands * rows = numHashes</code>
+          </li>
+          <li>mehr Bands: toleranter, aber mehr Kandidaten</li>
+          <li>mehr Rows: strenger, aber weniger Kandidaten</li>
+        </ul>
+      </section>
 
-      <p class="text-slate-400">Beispiel: 2000 Wörter → 50 Themen-Dimensionen</p>
-    </section>
+      <section
+        id="pl-preprocessing"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Textbereinigung</h2>
+        <p>
+          Vor dem Shingling kann der Text bereinigt werden (Lowercase, URL/Email entfernen,
+          Whitespace normalisieren, optional Diacritics). Ziel: robuste, reproduzierbare Features.
+        </p>
+      </section>
 
-    <!-- CLUSTERING -->
-    <section
-      id="clustering"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">Clustering</h2>
+      <section
+        id="pl-api"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">API</h2>
+        <p class="text-slate-300">
+          Der Check wird über <code>POST /plagiarism/check</code> ausgelöst. Das Frontend sendet
+          zwei Dokumente plus Options.
+        </p>
+      </section>
 
-      <p>
-        Dokumente werden anhand ihrer Vektorrepräsentation in Gruppen eingeteilt. Häufig verwendetes
-        Verfahren: <strong>k-Means</strong>.
-      </p>
-
-      <p>Das Ergebnis besteht aus:</p>
-
-      <ul class="list-disc list-inside space-y-1">
-        <li><strong>Cluster-ID:</strong> Zu welchem Cluster gehört ein Text?</li>
-        <li>
-          <strong>Top-Wörter pro Cluster:</strong>
-          Rückschlüsse auf das Thema (z. B. „Daten“, „Software“ für technische Texte).
-        </li>
-      </ul>
-    </section>
-
-    <!-- VOKABULAR -->
-    <section
-      id="vokabular"
-      class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
-    >
-      <h2 class="text-2xl font-semibold">Vokabular &amp; neue Texte</h2>
-
-      <p>
-        Das Vokabular enthält alle Wörter, die in den aktuell vorhandenen Texten vorkommen. Wird ein
-        neuer Text hinzugefügt und enthält neue Wörter, wächst das Vokabular.
-      </p>
-
-      <p>
-        Daher werden beim Hinzufügen neuer Dokumente alle BoW-, TF- oder TF-IDF-Vektoren neu
-        berechnet. Dies ist der normale und korrekte Ablauf bei BoW-basierten Verfahren.
-      </p>
-
-      <p class="text-slate-400">
-        Alternative Varianten wie „Feature-Hashing“ umgehen dieses Problem, sind jedoch für dieses
-        Projekt nicht notwendig.
-      </p>
-    </section>
+      <section
+        id="pl-output"
+        class="scroll-mt-40 px-4 py-4 border border-slate-800 bg-slate-900/40 rounded-2xl space-y-3"
+      >
+        <h2 class="text-2xl font-semibold">Ergebnis</h2>
+        <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <li><strong>similarityPercent:</strong> finaler Score</li>
+          <li>zusätzliche Telemetrie: shingleType, k, numHashes, numBands, numRows</li>
+          <li>optional: candidatePairs / notes (für Debugging/Erklärbarkeit)</li>
+        </ul>
+      </section>
+    }
   </main>
 </div>
