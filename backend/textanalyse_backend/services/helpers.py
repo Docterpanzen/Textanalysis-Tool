@@ -1,10 +1,53 @@
 from __future__ import annotations
 
 from functools import lru_cache
+import io
+from pathlib import Path
 from typing import Set
+
+import pdfplumber
+from docx import Document
 
 import nltk
 from nltk.corpus import stopwords as nltk_stopwords
+
+
+
+def _ext(filename: str) -> str:
+    return Path(filename).suffix.lower()
+
+
+def extract_text_from_bytes(filename: str, data: bytes) -> str:
+    """
+    Extract text depending on file extension.
+    Supported: .txt, .md, .pdf, .docx
+    """
+    ext = _ext(filename)
+
+    if ext in (".txt", ".md"):
+        # try utf-8 first, fallback to latin-1 (common for older docs)
+        try:
+            return data.decode("utf-8")
+        except UnicodeDecodeError:
+            return data.decode("latin-1", errors="replace")
+
+    if ext == ".docx":
+        bio = io.BytesIO(data)
+        doc = Document(bio)
+        # join paragraphs
+        return "\n".join(p.text for p in doc.paragraphs)
+
+    if ext == ".pdf":
+        bio = io.BytesIO(data)
+        texts: list[str] = []
+        with pdfplumber.open(bio) as pdf:
+            for page in pdf.pages:
+                t = page.extract_text() or ""
+                if t.strip():
+                    texts.append(t)
+        return "\n\n".join(texts)
+
+    raise ValueError(f"Unsupported file type: {ext}. Supported: .txt, .md, .pdf, .docx")
 
 
 # Ensure stopwords corpus is available

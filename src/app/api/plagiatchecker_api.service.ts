@@ -5,20 +5,13 @@ import { Observable } from 'rxjs';
 const BASE_URL = 'http://127.0.0.1:8000';
 
 export type ShingleType = 'char' | 'word';
-export type StopwordMode = 'none' | 'de' | 'en' | 'de_en';
-
-export interface PlagiarismDocument {
-  name: string;
-  content: string;
-}
 
 export interface PlagiarismOptions {
   shingleType: ShingleType;
-  shingleSize: number; // k
+  shingleSize: number;
   numHashes: number;
   numBands: number;
   numRows: number;
-
   cleaning?: {
     enabled: boolean;
     preset?: 'default' | 'strict';
@@ -30,23 +23,13 @@ export interface PlagiarismOptions {
   };
 }
 
-export interface PlagiarismCheckRequest {
-  documents: [PlagiarismDocument, PlagiarismDocument];
-  options: PlagiarismOptions;
-}
-
 export interface PlagiarismCheckResponse {
-  // core result
   similarityPercent: number;
-
-  // useful debug/telemetry
   shingleType: ShingleType;
   shingleSize: number;
   numHashes: number;
   numBands: number;
   numRows: number;
-
-  // optional details (backend can omit these initially)
   jaccardPercent?: number;
   candidatePairsFound?: number;
   notes?: string[];
@@ -56,9 +39,15 @@ export interface PlagiarismCheckResponse {
 export class PlagiatcheckerApiService {
   constructor(private http: HttpClient) {}
 
-  check(payload: PlagiarismCheckRequest): Observable<PlagiarismCheckResponse> {
-    // Proposed backend route (we’ll implement next):
-    // POST /plagiarism/check
-    return this.http.post<PlagiarismCheckResponse>(`${BASE_URL}/plagiarism/check`, payload);
+  checkFiles(
+    fileA: File,
+    fileB: File,
+    options: PlagiarismOptions,
+  ): Observable<PlagiarismCheckResponse> {
+    const fd = new FormData();
+    fd.append('fileA', fileA, fileA.name);
+    fd.append('fileB', fileB, fileB.name);
+    fd.append('options', JSON.stringify(options));
+    return this.http.post<PlagiarismCheckResponse>(`${BASE_URL}/plagiarism/checkFiles`, fd);
   }
 }
