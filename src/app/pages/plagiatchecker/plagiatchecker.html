@@ -1,0 +1,445 @@
+<div>
+  <!-- Header -->
+  <header class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-3xl font-semibold">Plagiatchecker</h1>
+      <p class="mt-1 text-sm text-slate-400">
+        Lade zwei Texte hoch und konfiguriere Shingles, MinHash und LSH.
+      </p>
+    </div>
+  </header>
+
+  <!-- Upload area: two docs -->
+  <section class="grid md:grid-cols-2 gap-4">
+    <!-- Doc A -->
+    <div
+      class="rounded-2xl border border-dashed bg-slate-900/40 p-4 transition"
+      [ngClass]="{
+        'border-sky-500 ring-4 ring-sky-500/40 bg-slate-900/70': isDragOverA,
+        'border-slate-700 hover:border-slate-500': !isDragOverA,
+      }"
+      (dragover)="onDragOver($event, 'A')"
+      (dragleave)="onDragLeave($event, 'A')"
+      (drop)="onDrop($event, 'A')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-medium text-slate-200">Dokument A</h2>
+          <p class="text-xs text-slate-500">Eine Datei auswählen oder hierher ziehen</p>
+        </div>
+
+        @if (docA.file) {
+          <button
+            type="button"
+            (click)="removeDoc('A')"
+            class="px-3 py-1.5 rounded-xl border border-slate-700 hover:bg-red-400 text-xs transition"
+          >
+            Entfernen
+          </button>
+        }
+      </div>
+
+      <div class="mt-3 flex items-center gap-3">
+        <label
+          for="fileA"
+          class="cursor-pointer rounded-xl bg-sky-700 hover:bg-sky-500 px-4 py-2 text-sm font-medium transition"
+        >
+          Datei auswählen
+        </label>
+        <input
+          id="fileA"
+          type="file"
+          class="hidden"
+          accept=".txt,.md,text/plain"
+          (change)="onFilesSelected($event, 'A')"
+        />
+
+        <p class="text-xs text-slate-400 truncate">
+          @if (docA.file) {
+            {{ docA.file.name }}
+          } @else {
+            (keine Datei)
+          }
+        </p>
+
+        <button
+          type="button"
+          (click)="toggleOpen('A')"
+          class="ml-auto text-slate-400 hover:bg-sky-500 rounded-lg p-1 transition"
+        >
+          @if (docA.isOpen) {
+            <img src="assets/Input/arrow_up_white_icon.svg" alt="" class="w-5 h-5" />
+          } @else {
+            <img src="assets/Input/arrow_down_white_icon.svg" alt="" class="w-5 h-5" />
+          }
+        </button>
+      </div>
+
+      @if (docA.isOpen) {
+        <div class="mt-3 rounded-lg bg-slate-900/80 border border-slate-700 p-3 space-y-2">
+          @if (docA.isLoading) {
+            <p class="text-xs text-slate-500">Lade Inhalt...</p>
+          } @else if (docA.error) {
+            <p class="text-xs text-rose-400">{{ docA.error }}</p>
+          } @else {
+            <pre class="text-xs text-slate-100 whitespace-pre-wrap max-h-52 overflow-y-auto"
+              >{{ useCleaning ? docA.cleaned : docA.raw }}
+            </pre>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Doc B -->
+    <div
+      class="rounded-2xl border border-dashed bg-slate-900/40 p-4 transition"
+      [ngClass]="{
+        'border-sky-500 ring-4 ring-sky-500/40 bg-slate-900/70': isDragOverB,
+        'border-slate-700 hover:border-slate-500': !isDragOverB,
+      }"
+      (dragover)="onDragOver($event, 'B')"
+      (dragleave)="onDragLeave($event, 'B')"
+      (drop)="onDrop($event, 'B')"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-sm font-medium text-slate-200">Dokument B</h2>
+          <p class="text-xs text-slate-500">Eine Datei auswählen oder hierher ziehen</p>
+        </div>
+
+        @if (docB.file) {
+          <button
+            type="button"
+            (click)="removeDoc('B')"
+            class="px-3 py-1.5 rounded-xl border border-slate-700 hover:bg-red-400 text-xs transition"
+          >
+            Entfernen
+          </button>
+        }
+      </div>
+
+      <div class="mt-3 flex items-center gap-3">
+        <label
+          for="fileB"
+          class="cursor-pointer rounded-xl bg-sky-700 hover:bg-sky-500 px-4 py-2 text-sm font-medium transition"
+        >
+          Datei auswählen
+        </label>
+        <input
+          id="fileB"
+          type="file"
+          class="hidden"
+          accept=".txt,.md,text/plain"
+          (change)="onFilesSelected($event, 'B')"
+        />
+
+        <p class="text-xs text-slate-400 truncate">
+          @if (docB.file) {
+            {{ docB.file.name }}
+          } @else {
+            (keine Datei)
+          }
+        </p>
+
+        <button
+          type="button"
+          (click)="toggleOpen('B')"
+          class="ml-auto text-slate-400 hover:bg-sky-500 rounded-lg p-1 transition"
+        >
+          @if (docB.isOpen) {
+            <img src="assets/Input/arrow_up_white_icon.svg" alt="" class="w-5 h-5" />
+          } @else {
+            <img src="assets/Input/arrow_down_white_icon.svg" alt="" class="w-5 h-5" />
+          }
+        </button>
+      </div>
+
+      @if (docB.isOpen) {
+        <div class="mt-3 rounded-lg bg-slate-900/80 border border-slate-700 p-3 space-y-2">
+          @if (docB.isLoading) {
+            <p class="text-xs text-slate-500">Lade Inhalt...</p>
+          } @else if (docB.error) {
+            <p class="text-xs text-rose-400">{{ docB.error }}</p>
+          } @else {
+            <pre class="text-xs text-slate-100 whitespace-pre-wrap max-h-52 overflow-y-auto"
+              >{{ useCleaning ? docB.cleaned : docB.raw }}
+            </pre>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section class="my-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
+    <h2 class="text-sm font-medium text-slate-200">Einstellungen</h2>
+
+    <div class="grid md:grid-cols-2 gap-4">
+      <!-- Shingle type -->
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Shingle-Typ</label>
+        <select
+          [(ngModel)]="shingleType"
+          (change)="onCleaningChanged()"
+          class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        >
+          <option value="char">Zeichen-Shingles</option>
+          <option value="word">Wort-Shingles</option>
+        </select>
+        <p class="mt-1 text-[11px] text-slate-500">
+          @if (shingleType === 'char') {
+            Für Plagiat-Erkennung meist besser (robust gegen kleine Änderungen).
+          } @else {
+            Gut bei sehr ähnlichen Texten, aber empfindlicher bei Umformulierungen.
+          }
+        </p>
+      </div>
+
+      <!-- Shingle size -->
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Shingle-Länge (k)</label>
+        <input
+          type="number"
+          min="2"
+          [(ngModel)]="shingleSize"
+          class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+        <p class="mt-1 text-[11px] text-slate-500">Zeichen: typ. 4-7 · Wörter: typ. 2-5</p>
+      </div>
+
+      <!-- MinHash -->
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Anzahl Hashes (numHashes)</label>
+        <input
+          type="number"
+          min="10"
+          [(ngModel)]="numHashes"
+          class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+        <p class="mt-1 text-[11px] text-slate-500">Größer = stabiler, aber langsamer.</p>
+      </div>
+
+      <!-- LSH bands/rows -->
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Bands</label>
+          <input
+            type="number"
+            min="1"
+            [(ngModel)]="numBands"
+            class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+          />
+        </div>
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Rows</label>
+          <input
+            type="number"
+            min="1"
+            [(ngModel)]="numRows"
+            class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+          />
+        </div>
+        <p class="col-span-2 text-[11px] text-slate-500">
+          Muss gelten: <span class="font-mono">bands * rows = numHashes</span>
+        </p>
+      </div>
+
+      <!-- Cleaning -->
+      <div class="md:col-span-2">
+        <label class="flex items-center gap-2 text-xs text-slate-400 mb-1">
+          <input
+            type="checkbox"
+            [(ngModel)]="useCleaning"
+            (change)="onCleaningChanged()"
+            class="rounded"
+          />
+          Textbereinigung aktivieren
+        </label>
+
+        @if (useCleaning) {
+          <div class="grid md:grid-cols-3 gap-3 mt-2">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">Preset</label>
+              <select
+                [(ngModel)]="cleanPreset"
+                (change)="onCleaningChanged()"
+                class="w-full rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+              >
+                <option value="default">Default</option>
+                <option value="strict">Strict</option>
+              </select>
+            </div>
+
+            <div class="md:col-span-2 grid grid-cols-2 gap-2 pt-6">
+              <label class="flex items-center gap-2 text-xs text-slate-300">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="toLower"
+                  (change)="onCleaningChanged()"
+                  class="rounded"
+                />
+                lowercase
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-300">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="normalizeWhitespace"
+                  (change)="onCleaningChanged()"
+                  class="rounded"
+                />
+                whitespace normalisieren
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-300">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="removeUrlsEmails"
+                  (change)="onCleaningChanged()"
+                  class="rounded"
+                />
+                URLs/Emails entfernen
+              </label>
+              <label class="flex items-center gap-2 text-xs text-slate-300">
+                <input
+                  type="checkbox"
+                  [(ngModel)]="stripDiacritics"
+                  (change)="onCleaningChanged()"
+                  class="rounded"
+                />
+                diacritics entfernen (ä→a)
+              </label>
+            </div>
+
+            @if (shingleType === 'word') {
+              <div class="md:col-span-3">
+                <label class="flex items-center gap-2 text-xs text-slate-300">
+                  <input
+                    type="checkbox"
+                    [(ngModel)]="removePunctuation"
+                    (change)="onCleaningChanged()"
+                    class="rounded"
+                  />
+                  punctuation entfernen (empfohlen für Wort-Shingles)
+                </label>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="mt-1 text-[11px] text-slate-500">Keine Bereinigung – Rohtext wird verwendet.</p>
+        }
+      </div>
+    </div>
+
+    <div class="mt-4 flex justify-end">
+      <button
+        type="button"
+        (click)="startCheck()"
+        [disabled]="!canRun || isChecking"
+        class="px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 disabled:text-slate-400 disabled:cursor-not-allowed transition inline-flex items-center gap-2"
+      >
+        @if (!isChecking) {
+          Plagiatcheck starten
+        } @else {
+          <svg class="h-4 w-4 animate-spin text-white" viewBox="0 0 24 24" fill="none">
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            ></circle>
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+            ></path>
+          </svg>
+          Prüfe ...
+        }
+      </button>
+    </div>
+  </section>
+
+  <!-- Messages -->
+  @if (errorMessage) {
+    <p
+      class="mb-4 text-sm text-rose-400 bg-rose-500/10 border border-rose-500/30 px-3 py-2 rounded-xl"
+    >
+      {{ errorMessage }}
+    </p>
+  }
+</div>
+@if (result) {
+  <section class="my-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-3">
+    <div class="flex items-start justify-between gap-4">
+      <div>
+        <h2 class="text-sm font-medium text-slate-200">Ergebnis</h2>
+
+        <!-- Parameters (now visible again) -->
+        <p class="mt-1 text-xs text-slate-500">
+          {{ shingleType }}-shingles | k={{ shingleSize }} | hashes={{ numHashes }} | bands={{
+            numBands
+          }}
+          | rows={{ numRows }}
+        </p>
+
+        @if (result.notes?.length) {
+          <ul class="mt-2 list-disc list-inside text-xs text-slate-300">
+            @for (n of result.notes; track n) {
+              <li>{{ n }}</li>
+            }
+          </ul>
+        }
+      </div>
+    </div>
+
+    <!-- Layout: 2/4 progress | 1/4 spacer | 1/4 score card -->
+    <div class="grid grid-cols-4 gap-4 items-center">
+      <!-- Left half: progress -->
+      <div class="col-span-2">
+        <div class="flex items-center justify-between mb-1">
+          <p class="text-xs text-slate-400">Übereinstimmung</p>
+          <p class="text-xs text-slate-400">{{ similarity | number: '1.0-2' }}%</p>
+        </div>
+
+        <div class="h-3 rounded-full bg-slate-800 border border-slate-700 overflow-hidden">
+          <div
+            class="h-full rounded-full transition-all duration-500"
+            [ngClass]="{
+              'bg-emerald-500': similarityTone === 'low',
+              'bg-amber-500': similarityTone === 'mid',
+              'bg-rose-500': similarityTone === 'high',
+            }"
+            [style.width.%]="similarity"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Spacer: 1/4 empty -->
+      <div class="col-span-1"></div>
+
+      <!-- Right quarter: small score card -->
+      <div
+        class="col-span-1 rounded-2xl border p-3"
+        [ngClass]="{
+          'border-emerald-500/40 bg-emerald-500/10': similarityTone === 'low',
+          'border-amber-500/40 bg-amber-500/10': similarityTone === 'mid',
+          'border-rose-500/40 bg-rose-500/10': similarityTone === 'high',
+        }"
+      >
+        <p class="text-xs text-slate-300">Ähnlichkeit</p>
+        <p
+          class="text-3xl font-semibold"
+          [ngClass]="{
+            'text-emerald-300': similarityTone === 'low',
+            'text-amber-300': similarityTone === 'mid',
+            'text-rose-300': similarityTone === 'high',
+          }"
+        >
+          {{ similarity | number: '1.0-2' }}%
+        </p>
+        <p class="text-xs text-slate-300 mt-1">{{ similarityLabel }}</p>
+      </div>
+    </div>
+  </section>
+}
