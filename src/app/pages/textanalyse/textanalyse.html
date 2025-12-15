@@ -18,18 +18,6 @@
     </div>
   </header>
 
-  <!-- Global loading info -->
-  @if (isLoading) {
-    <div
-      class="mb-4 inline-flex items-center gap-2 rounded-xl bg-sky-900/40 border border-sky-700/60 px-3 py-2 text-xs text-sky-100"
-    >
-      <span
-        class="inline-block w-4 h-4 border-2 border-sky-300 border-t-transparent rounded-full animate-spin"
-      ></span>
-      <span>Analyse läuft … je nach Textmenge kann dies einige Sekunden dauern.</span>
-    </div>
-  }
-
   <!-- Auswahl der Texte (Summary) -->
   <section
     class="my-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 flex items-center justify-between"
@@ -287,6 +275,18 @@
       </p>
     }
   </section>
+
+  <!-- Global loading info -->
+  @if (isLoading) {
+    <div
+      class="mb-4 inline-flex items-center gap-2 rounded-xl bg-sky-900/40 border border-sky-700/60 px-3 py-2 text-xs text-sky-100"
+    >
+      <span
+        class="inline-block w-4 h-4 border-2 border-sky-300 border-t-transparent rounded-full animate-spin"
+      ></span>
+      <span>Analyse läuft … je nach Textmenge kann dies einige Sekunden dauern.</span>
+    </div>
+  }
 
   <!-- Error message -->
   @if (errorMessage) {

@@ -6,10 +6,16 @@ from contextlib import asynccontextmanager
 
 from .api.textanalyse import router as textanalyse_router
 from .api.texts import router as texts_router
+from .api.plagiarism import router as plagiarism_router
 from .config import settings
 
 from .db.session import engine
 from .db import models
+
+
+
+
+
 
 
 logging.basicConfig(
@@ -29,7 +35,6 @@ async def lifespan(app: FastAPI):
     yield  # <<<<< hier läuft die App
 
     logger.info("Server fährt herunter…")
-    # falls du später Cleanup brauchst: hier einbauen
 
 
 # Erstelle FastAPI-App mit Lifespan
@@ -49,5 +54,6 @@ app.add_middleware(
 # API-Router einbinden
 app.include_router(textanalyse_router)
 app.include_router(texts_router) 
+app.include_router(plagiarism_router)
 
 logger.info("Textanalyse Backend gestartet")
