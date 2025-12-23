@@ -3,6 +3,9 @@ import re
 import numpy as np
 from typing import List, Set
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 # helpers
 
@@ -79,6 +82,7 @@ def check_plagiarism(
     num_rows: int,
     clean: bool,
 ):
+    logger.info("Plagiatprüfung gestartet.")
     if clean:
         text_a = clean_text(text_a)
         text_b = clean_text(text_b)

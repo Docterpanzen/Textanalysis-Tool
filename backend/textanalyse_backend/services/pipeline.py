@@ -22,6 +22,16 @@ def run_pipeline(
     documents: List[TextDocument],
     opts: TextAnalysisOptions,
 ) -> TextAnalysisResult:
+    '''
+    Führt die Textanalyse-Pipeline durch. 
+    
+    :param documents: Liste der zu analysierenden Dokumente
+    :type documents: List[TextDocument]
+    :param opts: Analyse-Optionen
+    :type opts: TextAnalysisOptions
+    :return: Ergebnis der Textanalyse
+    :rtype: TextAnalysisResult
+    '''
     logger.info(
         "Starte Pipeline: %d Dokumente, vectorizer=%s, clusters=%d",
         len(documents),

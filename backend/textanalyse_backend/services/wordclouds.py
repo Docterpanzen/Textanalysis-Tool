@@ -1,9 +1,7 @@
 from __future__ import annotations
-
 import base64
 import io
 from typing import Dict, List
-
 import numpy as np
 
 try:
@@ -13,11 +11,14 @@ except ImportError:  # falls lib fehlt
 
 
 def _make_wordcloud_png(freqs: Dict[str, float]) -> str | None:
-    """
-    Erzeuge ein PNG als Base64-String aus Wortfrequenzen.
-    Gibt None zurück, wenn wordcloud nicht installiert ist
-    oder keine sinnvollen Frequenzen vorhanden sind.
-    """
+    '''
+    Erstellt eine Wordcloud als PNG-Bild (Base64-kodiert) aus Wortfrequenzen.
+    
+    :param freqs: Wortfrequenzen (Wort -> Gewicht)
+    :type freqs: Dict[str, float]
+    :return: Base64-kodiertes PNG-Bild der Wordcloud oder None
+    :rtype: str | None
+    '''
     if WordCloud is None:
         return None
 
@@ -43,12 +44,19 @@ def generate_cluster_wordclouds(
     feature_names: List[str],
     top_n: int = 80,
 ) -> Dict[int, str]:
-    """
-    Berechnet für jeden Cluster eine Wordcloud (als Base64-PNG-String).
-    X: Dokument-Term-Matrix (CSR)
-    labels: Clusterlabels pro Dokument
-    feature_names: Vokabular (Index -> Wort)
-    """
+    '''
+    Generiert Wordclouds für jeden Cluster basierend auf den Top-N Begriffen.
+
+    :param X: Dokument-Term-Matrix (CSR)
+    :param labels: Clusterlabels pro Dokument
+    :type labels: np.ndarray
+    :param feature_names: Vokabular (Index -> Wort)
+    :type feature_names: List[str]
+    :param top_n: Anzahl der Top-Begriffe pro Cluster
+    :type top_n: int
+    :return: Dictionary mit Cluster-ID als Schlüssel und Base64-kodiertem PNG-Bild als Wert
+    :rtype: Dict[int, str]
+    '''
     if WordCloud is None:
         return {}
 
