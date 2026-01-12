@@ -41,7 +41,6 @@ def vectorize(
             sw = get_stopwords(m)
             stop_words = list(sw) if sw else None
 
-    # --- BoW / TF ---
     if mode in ("bow", "tf"):
         vec = CountVectorizer(
             max_features=max_features,
@@ -55,7 +54,6 @@ def vectorize(
             row_sums[row_sums == 0] = 1  # avoid division by zero
             X = X.multiply(1 / row_sums[:, None])
 
-    # --- TF-IDF ---
     elif mode == "tfidf":
         vec = TfidfVectorizer(
             max_features=max_features,

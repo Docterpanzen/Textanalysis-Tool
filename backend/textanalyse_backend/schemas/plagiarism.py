@@ -14,6 +14,7 @@ class CleaningOptions(BaseModel):
     stripDiacritics: Optional[bool] = False
     removePunctuation: Optional[bool] = True
 
+
 class PlagiarismOptions(BaseModel):
     shingleType: Literal["char", "word"] = "char"
     shingleSize: int = Field(5, ge=1, le=20)

@@ -8,7 +8,11 @@ from ..db.session import get_db
 from ..db import models
 from ..schemas.texts import TextCreate, TextRead
 
+import logging
+
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/texts", tags=["texts"])
+
 
 
 @router.post("", response_model=TextRead, status_code=status.HTTP_201_CREATED)
@@ -24,6 +28,7 @@ def create_text(payload: TextCreate, db: Session = Depends(get_db)) -> TextRead:
     db.add(db_text)
     db.commit()
     db.refresh(db_text)
+    logging.info(f"Text mit ID {db_text.id} in der Datenbank angelegt.")
     return db_text
 
 
@@ -36,7 +41,7 @@ def list_texts(
 ) -> List[TextRead]:
     """
     Gibt eine Liste gespeicherter Texte zurück.
-    Optional mit einfacher Suchfunktion.
+    Unterstützt Paging (limit/offset) und eine einfache Suchfunktion.
     """
 
     query = db.query(models.Text)

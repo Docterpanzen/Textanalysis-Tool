@@ -9,6 +9,16 @@ def reduce_dimensions(
     X: csr_matrix,
     n_components: int | None,
 ) -> np.ndarray:
+    '''
+    Reduce the dimensionality of the input matrix X using Truncated SVD.
+    
+    :param X: Input data matrix (sparse)
+    :type X: csr_matrix
+    :param n_components: Number of components to reduce to
+    :type n_components: int | None
+    :return: Reduced data matrix
+    :rtype: ndarray[_AnyShape, dtype[Any]]
+    '''
     if not n_components or n_components <= 0 or n_components >= X.shape[1]:
         return X.toarray()
     svd = TruncatedSVD(n_components=n_components)
@@ -19,6 +29,16 @@ def kmeans_cluster(
     X: np.ndarray,
     k: int,
 ) -> np.ndarray:
+    '''
+    Cluster the input data X into k clusters using K-Means.
+
+    :param X: Input data matrix
+    :type X: np.ndarray
+    :param k: Number of clusters
+    :type k: int
+    :return: Cluster labels for each sample
+    :rtype: ndarray[_AnyShape, dtype[Any]]
+    '''
     kmeans = KMeans(n_clusters=k, n_init="auto")
     return kmeans.fit_predict(X)
 
@@ -30,10 +50,21 @@ def top_terms_per_cluster(
     k: int,
     top_n: int = 10,
 ) -> list[list[str]]:
-    """
-    Bestimmt für jeden Cluster die wichtigsten Terme.
-    Erwartet eine Sparse-Matrix X (beliebiges Format) und Clusterlabels.
-    """
+    '''
+    Get the top N terms for each cluster based on mean feature values.
+
+    :param X: Input data matrix (sparse)
+    :param labels: Cluster labels for each sample
+    :type labels: Iterable[int]
+    :param feature_names: List of feature names corresponding to columns in X
+    :type feature_names: list[str]
+    :param k: Number of clusters
+    :type k: int
+    :param top_n: Number of top terms to return per cluster
+    :type top_n: int
+    :return: List of top terms for each cluster
+    :rtype: list[list[str]]
+    '''
 
     # WICHTIG: Auf CSR konvertieren, damit X[idx] funktioniert
     if not isinstance(X, csr_matrix):

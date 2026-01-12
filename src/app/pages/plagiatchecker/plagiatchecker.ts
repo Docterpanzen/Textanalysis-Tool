@@ -3,7 +3,6 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import {
-  PlagiarismCheckRequest,
   PlagiarismCheckResponse,
   PlagiatcheckerApiService,
 } from '../../api/plagiatchecker_api.service';
@@ -278,43 +277,41 @@ export class Plagiatchecker {
       return;
     }
 
-    const payload: PlagiarismCheckRequest = {
-      documents: [
-        { name: this.docA.name || 'docA', content: this.effectiveTextA },
-        { name: this.docB.name || 'docB', content: this.effectiveTextB },
-      ],
-      options: {
-        shingleType: this.shingleType,
-        shingleSize: this.shingleSize,
-        numHashes: this.numHashes,
-        numBands: this.numBands,
-        numRows: this.numRows,
-        cleaning: {
-          enabled: this.useCleaning,
-          preset: this.cleanPreset,
-          toLower: this.toLower,
-          normalizeWhitespace: this.normalizeWhitespace,
-          removeUrlsEmails: this.removeUrlsEmails,
-          stripDiacritics: this.stripDiacritics,
-          removePunctuation: this.removePunctuation,
-        },
+    // ... inside startCheck()
+
+    if (!this.docA.file || !this.docB.file) {
+      this.errorMessage = 'Bitte lade zwei Dateien hoch.';
+      return;
+    }
+
+    const options = {
+      shingleType: this.shingleType,
+      shingleSize: this.shingleSize,
+      numHashes: this.numHashes,
+      numBands: this.numBands,
+      numRows: this.numRows,
+      cleaning: {
+        enabled: this.useCleaning,
+        preset: this.cleanPreset,
+        toLower: this.toLower,
+        normalizeWhitespace: this.normalizeWhitespace,
+        removeUrlsEmails: this.removeUrlsEmails,
+        stripDiacritics: this.stripDiacritics,
+        removePunctuation: this.removePunctuation,
       },
     };
 
-    this.debugPayload = payload;
-
     this.isChecking = true;
 
-    this.api.check(payload).subscribe({
+    this.api.checkFiles(this.docA.file, this.docB.file, options).subscribe({
       next: (res) => {
         this.result = res;
-        this.successMessage = `Check fertig: ${res.similarityPercent.toFixed(2)}% Ähnlichkeit.`;
         this.isChecking = false;
       },
       error: (err) => {
         console.error(err);
         this.errorMessage =
-          'Fehler beim Plagiatcheck. Läuft das Backend und existiert POST /plagiarism/check?';
+          'Fehler beim Plagiatcheck (File-Upload). Prüfe Backend-Route /plagiarism/checkFiles.';
         this.isChecking = false;
       },
     });

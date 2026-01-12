@@ -3,10 +3,11 @@ import re
 import numpy as np
 from typing import List, Set
 
+import logging
 
-# -----------------------------
+logger = logging.getLogger(__name__)
+
 # helpers
-# -----------------------------
 
 def clean_text(text: str) -> str:
     text = text.lower()
@@ -34,9 +35,7 @@ def generate_hash_functions(n: int):
     return funcs
 
 
-# -----------------------------
 # core logic
-# -----------------------------
 
 def compute_minhash(shingles: List[Set[str]], num_hashes: int) -> np.ndarray:
     hash_funcs = generate_hash_functions(num_hashes)
@@ -70,9 +69,7 @@ def jaccard(a: Set[str], b: Set[str]) -> float:
     return len(a & b) / len(a | b)
 
 
-# -----------------------------
 # public API
-# -----------------------------
 
 def check_plagiarism(
     text_a: str,
@@ -85,6 +82,7 @@ def check_plagiarism(
     num_rows: int,
     clean: bool,
 ):
+    logger.info("Plagiatprüfung gestartet.")
     if clean:
         text_a = clean_text(text_a)
         text_b = clean_text(text_b)
