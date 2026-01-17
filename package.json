@@ -7,7 +7,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier . --write",
-    "build": "ng build"
+    "build": "ng build --configuration production"
   },
   "prettier": {
     "printWidth": 100,
