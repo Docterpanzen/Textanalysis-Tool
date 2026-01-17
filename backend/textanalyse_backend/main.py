@@ -12,7 +12,7 @@ from .config import settings
 from .db.session import engine
 from .db import models
 
-
+from fastapi.middleware.cors import CORSMiddleware
 
 
 
@@ -44,7 +44,9 @@ app = FastAPI(title="Textanalyse Backend", lifespan=lifespan)
 # CORS-Konfiguration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.frontend_origin],
+    allow_origins=[
+        "https://textanalysis-tool-frontend.onrender.com",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
