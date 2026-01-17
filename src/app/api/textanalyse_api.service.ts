@@ -2,6 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { environment } from '../../environments/environment';
+
 export type VectorizerType = 'bow' | 'tf' | 'tfidf';
 
 export interface TextDocument {
@@ -55,7 +57,7 @@ export interface TextRecord {
 
 @Injectable({ providedIn: 'root' })
 export class TextanalysisApiService {
-  private baseUrl = 'http://localhost:8000';
+  private baseUrl = environment.apiBaseUrl;
 
   constructor(private http: HttpClient) {}
 
