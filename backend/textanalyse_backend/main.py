@@ -45,7 +45,7 @@ app = FastAPI(title="Textanalyse Backend", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://textanalysis-tool-frontend.onrender.com",
+        "https://textanalysis-tool-1.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
