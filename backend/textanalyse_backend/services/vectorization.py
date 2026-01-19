@@ -52,7 +52,7 @@ def vectorize(
             # Row-wise normalization to term frequency
             row_sums = np.asarray(X.sum(axis=1)).ravel()
             row_sums[row_sums == 0] = 1  # avoid division by zero
-            X = X.multiply(1 / row_sums[:, None])
+            X = X.multiply(1 / row_sums[:, None]).tocsr()
 
     elif mode == "tfidf":
         vec = TfidfVectorizer(
