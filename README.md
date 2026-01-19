@@ -40,6 +40,8 @@ docker compose up
 ```
 Startet Front- und Backend in je einem Container, wird bei erstmaliger Nutzung gebaut. 
 Angular Frontend ist über [localhost](http://localhost:4200/) erreichbar.
+
+Container können im Terminal mit der Tastenkombination <kbd>Strg</kbd>+<kbd>C</kbd> oder auch mit `docker compose down` gestoppt werden.
 ## Frontend Abhängigkeiten installieren und starten
 
 ### Node.Js installieren
