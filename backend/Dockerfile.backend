@@ -1,0 +1,24 @@
+# ========
+# Backend
+# ========
+# Use python-slim docker image, alpine version lacks glibc!
+ARG PYTHON_VERSION=3.14-slim
+# build stage
+FROM python:${PYTHON_VERSION}
+
+# install PDM
+RUN pip install -U pdm
+# disable update check
+ENV PDM_CHECK_UPDATE=false
+
+WORKDIR /backend
+# copy files
+COPY . .
+
+RUN pdm install --check --prod --no-editable
+
+ENV PATH="/backend/.venv/bin:$PATH"
+
+EXPOSE 8000
+
+CMD ["pdm", "run", "docker-api"]

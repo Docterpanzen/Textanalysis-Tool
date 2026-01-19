@@ -7,6 +7,7 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 - [Textanalyse](#textanalyse)
   - [Inhaltsverzeichnis](#inhaltsverzeichnis)
   - [Kurzbeschreibung](#kurzbeschreibung)
+  - [Mit Docker starten](#mit-docker-starten)
   - [Frontend Abhängigkeiten installieren und starten](#frontend-abhängigkeiten-installieren-und-starten)
     - [Node.Js installieren](#nodejs-installieren)
     - [Angular Cli installieren](#angular-cli-installieren)
@@ -33,7 +34,12 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 Dieses Projekt ist für die Kurse Datenbasierte Methoden und Softwaredesign und kombiniert hierbei die Methoden von Datenbasierte Methoden und die Softwarestruktur und Arbeitsweise von Softwaredesign. Mehr dazu in der Angular App unter dem Reiter Dokumentation.
 
 Wie man die Angular App startet und alle zugehärigen Sachen runterlädt sind in folgendem beschrieben.
-
+## Mit Docker starten
+```
+docker compose up
+```
+Startet Front- und Backend in je einem Container, wird bei erstmaliger Nutzung gebaut. 
+Angular Frontend ist über [localhost](http://localhost:4200/) erreichbar.
 ## Frontend Abhängigkeiten installieren und starten
 
 ### Node.Js installieren

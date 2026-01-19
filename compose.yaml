@@ -1,0 +1,15 @@
+services:
+  angular-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+    image: textanalyse-frontend
+    ports:
+      - "4200:4200"
+  python-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.backend
+    image: textanalyse-backend
+    ports:
+      - "8000:8000"
