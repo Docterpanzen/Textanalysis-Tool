@@ -6,7 +6,9 @@
     "TestAngular": "ng test",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier . --write"
+    "format": "prettier . --write",
+    "start": "ng serve",
+    "build": "ng build"
   },
   "prettier": {
     "printWidth": 100,
