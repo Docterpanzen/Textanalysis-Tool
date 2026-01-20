@@ -2,13 +2,15 @@
   "name": "plagiatchecker",
   "version": "0.0.0",
   "scripts": {
-    "RunAngular": "ng serve -o",
+    "start": "ng serve -o",
+    "build": "ng build",
     "TestAngular": "ng test",
+    "test:all": "npm run test:angular && npm run test:frontend:unit",
+    "test:frontend:unit": "npm --prefix test_frontend run test:unit",
+    "test:frontend:e2e": "npm --prefix test_frontend run test:e2e",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "format": "prettier . --write",
-    "start": "ng serve",
-    "build": "ng build"
+    "format": "prettier . --write"
   },
   "prettier": {
     "printWidth": 100,

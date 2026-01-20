@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { PlagiarismSession } from './plagiarism-session';
+import { PlagiarismSessionService } from './plagiarism-session';
 
-describe('PlagiarismSession', () => {
-  let service: PlagiarismSession;
+describe('PlagiarismSessionService', () => {
+  let service: PlagiarismSessionService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(PlagiarismSession);
+    service = TestBed.inject(PlagiarismSessionService);
   });
 
   it('should be created', () => {

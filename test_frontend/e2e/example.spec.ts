@@ -1,18 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test('has title', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+const baseUrl = 'http://localhost:4200';
 
-  // Expect a title "to contain" a substring.
-  await expect(page).toHaveTitle(/Playwright/);
+test('dashboard shows key sections', async ({ page }) => {
+  await page.goto(`${baseUrl}/dashboard`);
+
+  await expect(page.getByRole('heading', { name: 'Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Analyse-Historie' })).toBeVisible();
+  await expect(page.getByText('Jobs insgesamt')).toBeVisible();
 });
 
-test('get started link', async ({ page }) => {
-  await page.goto('https://playwright.dev/');
+test('plagiatchecker has two upload areas', async ({ page }) => {
+  await page.goto(`${baseUrl}/plagiatchecker`);
 
-  // Click the get started link.
-  await page.getByRole('link', { name: 'Get started' }).click();
-
-  // Expects page to have a heading with the name of Installation.
-  await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Plagiatchecker' })).toBeVisible();
+  await expect(page.getByText('Dokument A')).toBeVisible();
+  await expect(page.getByText('Dokument B')).toBeVisible();
 });
