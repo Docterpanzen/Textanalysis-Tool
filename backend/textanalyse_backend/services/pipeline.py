@@ -18,20 +18,10 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def run_pipeline(
+def _run_pipeline_core(
     documents: List[TextDocument],
     opts: TextAnalysisOptions,
-) -> TextAnalysisResult:
-    '''
-    Führt die Textanalyse-Pipeline durch. 
-    
-    :param documents: Liste der zu analysierenden Dokumente
-    :type documents: List[TextDocument]
-    :param opts: Analyse-Optionen
-    :type opts: TextAnalysisOptions
-    :return: Ergebnis der Textanalyse
-    :rtype: TextAnalysisResult
-    '''
+) -> tuple[List[int], List[str], List[str], dict, dict, int]:
     logger.info(
         "Starte Pipeline: %d Dokumente, vectorizer=%s, clusters=%d",
         len(documents),
@@ -78,10 +68,21 @@ def run_pipeline(
             feature_names=feature_names,
             top_n=80,
         )
-    except Exception as e:  
+    except Exception as e:
         logger.exception("Fehler bei der Wordcloud-Erzeugung: %s", e)
         cluster_wordclouds = {}
 
+    return labels, names, feature_names, cluster_terms, cluster_wordclouds, k
+
+
+def _build_result(
+    labels: List[int],
+    names: List[str],
+    feature_names: List[str],
+    cluster_terms: dict,
+    cluster_wordclouds: dict,
+    k: int,
+) -> TextAnalysisResult:
     clusters: List[ClusterInfo] = []
     for cluster_id in range(k):
         doc_indices = [i for i, lab in enumerate(labels) if lab == cluster_id]
@@ -98,3 +99,48 @@ def run_pipeline(
         clusters=clusters,
         vocabularySize=len(feature_names),
     )
+
+
+def run_pipeline(
+    documents: List[TextDocument],
+    opts: TextAnalysisOptions,
+) -> TextAnalysisResult:
+    '''
+    Führt die Textanalyse-Pipeline durch. 
+    
+    :param documents: Liste der zu analysierenden Dokumente
+    :type documents: List[TextDocument]
+    :param opts: Analyse-Optionen
+    :type opts: TextAnalysisOptions
+    :return: Ergebnis der Textanalyse
+    :rtype: TextAnalysisResult
+    '''
+    labels, names, feature_names, cluster_terms, cluster_wordclouds, k = _run_pipeline_core(
+        documents, opts
+    )
+    return _build_result(
+        labels,
+        names,
+        feature_names,
+        cluster_terms,
+        cluster_wordclouds,
+        k,
+    )
+
+
+def run_pipeline_with_labels(
+    documents: List[TextDocument],
+    opts: TextAnalysisOptions,
+) -> tuple[TextAnalysisResult, List[int]]:
+    labels, names, feature_names, cluster_terms, cluster_wordclouds, k = _run_pipeline_core(
+        documents, opts
+    )
+    result = _build_result(
+        labels,
+        names,
+        feature_names,
+        cluster_terms,
+        cluster_wordclouds,
+        k,
+    )
+    return result, labels

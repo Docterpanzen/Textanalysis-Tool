@@ -83,6 +83,7 @@ class Cluster(Base):
     analysis_run_id = Column(Integer, ForeignKey("analysis_runs.id"), nullable=False)
     cluster_index = Column(Integer, nullable=False)  # 0,1,2,...
     top_terms = Column(SAText, nullable=True)          # z.B. JSON oder kommagetrennt
+    wordcloud_png = Column(SAText, nullable=True)      # base64 PNG
     size = Column(Integer, nullable=False, default=0)
 
     analysis_run = relationship("AnalysisRun", back_populates="clusters")

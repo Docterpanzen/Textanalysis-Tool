@@ -4,10 +4,12 @@ from sqlalchemy.orm import Session
 from ..schemas.textanalyse import (
     AnalyzeRequest,
     AnalyzeByIdsRequest,
+    TextDocument,
     TextAnalysisResult,
 )
-from ..services.pipeline import run_pipeline
-from ..services.db_helpers import load_documents_by_ids
+from ..services.pipeline import run_pipeline, run_pipeline_with_labels
+from ..services.db_helpers import load_text_records_by_ids
+from ..services.history import save_analysis_run
 from ..db.session import get_db
 
 # <--- WICHTIG: dieses 'router' importiert deine main.py
@@ -60,11 +62,14 @@ def analyze_by_ids(
     """
 
     # 1) Texte aus DB holen und in TextDocument-Objekte umwandeln
-    documents = load_documents_by_ids(db, req.text_ids)
+    text_records = load_text_records_by_ids(db, req.text_ids)
+    documents = [
+        TextDocument(name=text.name, content=text.content or "") for text in text_records
+    ]
 
     # 2) Pipeline aufrufen (gleiche Funktion wie oben)
     try:
-        return run_pipeline(documents, req.options)
+        result, labels = run_pipeline_with_labels(documents, req.options)
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -75,3 +80,21 @@ def analyze_by_ids(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unerwarteter Fehler bei der Analyse.",
         ) from e
+
+    # 3) Analyseergebnis in der Historie speichern
+    try:
+        save_analysis_run(
+            db,
+            [text.id for text in text_records],
+            req.options,
+            labels,
+            result,
+        )
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Fehler beim Speichern der Analyse-Historie.",
+        ) from e
+
+    return result
