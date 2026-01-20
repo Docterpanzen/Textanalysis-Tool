@@ -7,9 +7,10 @@ from contextlib import asynccontextmanager
 from .api.textanalyse import router as textanalyse_router
 from .api.texts import router as texts_router
 from .api.plagiarism import router as plagiarism_router
+from .api.history import router as history_router
 from .config import settings
 
-from .db.session import engine
+from .db.session import engine, ensure_sqlite_columns
 from .db import models
 
 
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     logger.info("Initialisiere Datenbank (SQLite)…")
     models.Base.metadata.create_all(bind=engine)
+    ensure_sqlite_columns()
     logger.info("Datenbank-Tabellen sind bereit.")
 
     yield  # <<<<< hier läuft die App
@@ -55,5 +57,6 @@ app.add_middleware(
 app.include_router(textanalyse_router)
 app.include_router(texts_router) 
 app.include_router(plagiarism_router)
+app.include_router(history_router)
 
 logger.info("Textanalyse Backend gestartet")

@@ -1,5 +1,5 @@
 # textanalyse_backend/db/session.py
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 # SQLite-Datenbank im backend-Ordner:
@@ -28,3 +28,15 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def ensure_sqlite_columns():
+    if engine.dialect.name != "sqlite":
+        return
+
+    with engine.connect() as conn:
+        columns = conn.execute(text("PRAGMA table_info(clusters)")).fetchall()
+        column_names = {row[1] for row in columns}
+        if "wordcloud_png" not in column_names:
+            conn.execute(text("ALTER TABLE clusters ADD COLUMN wordcloud_png TEXT"))
+            conn.commit()
