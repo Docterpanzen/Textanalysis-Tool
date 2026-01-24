@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import {
   AnalysisRunDetail,
   AnalysisRunSummary,
+  DashboardMetrics,
   HistoryApiService,
   HistoryOverview,
 } from '../../api/history_api.service';
@@ -31,6 +32,17 @@ export class Dashboard implements OnInit {
   activeWordcloud: string | null = null;
   pendingRunId: number | null = null;
 
+  metrics: DashboardMetrics | null = null;
+  metricsLoading = false;
+  metricsError: string | null = null;
+  activeRangeIndex = 0;
+  readonly timeRanges = [
+    { id: '7d', label: 'Letzte 7 Tage', days: 7 },
+    { id: '30d', label: 'Letzte 30 Tage', days: 30 },
+    { id: '90d', label: 'Letzte 90 Tage', days: 90 },
+    { id: 'all', label: 'Gesamt', days: null },
+  ];
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -45,6 +57,7 @@ export class Dashboard implements OnInit {
         this.pendingRunId = parsed;
       }
     });
+    this.loadMetrics();
     this.loadHistory();
   }
 
@@ -118,6 +131,71 @@ export class Dashboard implements OnInit {
     if (value === null || value === undefined) return '-';
     if (typeof value === 'boolean') return value ? 'Ja' : 'Nein';
     return String(value);
+  }
+
+  nextRange() {
+    this.activeRangeIndex = (this.activeRangeIndex + 1) % this.timeRanges.length;
+    this.loadMetrics();
+  }
+
+  prevRange() {
+    this.activeRangeIndex =
+      (this.activeRangeIndex - 1 + this.timeRanges.length) % this.timeRanges.length;
+    this.loadMetrics();
+  }
+
+  setRange(index: number) {
+    this.activeRangeIndex = index;
+    this.loadMetrics();
+  }
+
+  get activeRangeLabel(): string {
+    return this.timeRanges[this.activeRangeIndex]?.label ?? 'Gesamt';
+  }
+
+  get singletonClusterRateLabel(): string {
+    const rate = this.metrics?.quality.singletonClusterRate ?? 0;
+    return `${Math.round(rate * 100)}%`;
+  }
+
+  get avgTextLengthLabel(): string {
+    const value = this.metrics?.quality.avgTextLength ?? 0;
+    return Math.round(value).toString();
+  }
+
+  get runSeriesMax(): number {
+    const series = this.metrics?.runSeries ?? [];
+    const max = Math.max(0, ...series.map((s) => s.count));
+    return max || 1;
+  }
+
+  private loadMetrics() {
+    this.metricsLoading = true;
+    this.metricsError = null;
+
+    const range = this.timeRanges[this.activeRangeIndex];
+    let params: { start?: string; end?: string } | undefined;
+
+    if (range.days) {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - range.days + 1);
+      params = {
+        start: start.toISOString(),
+        end: end.toISOString(),
+      };
+    }
+
+    this.historyApi.getDashboardMetrics(params).subscribe({
+      next: (res) => {
+        this.metrics = res;
+        this.metricsLoading = false;
+      },
+      error: () => {
+        this.metricsError = 'Fehler beim Laden der Dashboard-Metriken.';
+        this.metricsLoading = false;
+      },
+    });
   }
 
   private loadHistory() {

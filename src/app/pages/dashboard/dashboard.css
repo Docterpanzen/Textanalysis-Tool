@@ -1,0 +1,88 @@
+.dashboard-range-card {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(15, 23, 42, 0.7);
+  width: fit-content;
+}
+
+.dashboard-kpi-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dashboard-range-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.dashboard-range-nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dashboard-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dashboard-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.4);
+}
+
+.dashboard-dot.active {
+  background: #ffffff;
+}
+
+.dashboard-chart {
+  margin-top: 1rem;
+  display: grid;
+  grid-auto-flow: column;
+  gap: 0.5rem;
+  align-items: end;
+  height: 140px;
+}
+
+.dashboard-bar {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 100%;
+}
+
+.dashboard-bar-fill {
+  width: 18px;
+  border-radius: 0.5rem 0.5rem 0.25rem 0.25rem;
+  background: linear-gradient(180deg, #38bdf8, #2563eb);
+  min-height: 6px;
+}
+
+.dashboard-bar-label {
+  position: absolute;
+  top: -16px;
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.dashboard-pill {
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.35);
+  color: #bfdbfe;
+  font-size: 0.7rem;
+}
