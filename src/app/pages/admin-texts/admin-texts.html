@@ -1,18 +1,110 @@
 <div class="admin-texts">
   <div class="admin-texts-header">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-wrap items-center justify-between gap-4">
       <div>
         <h2 class="text-xl font-semibold">Texte (Admin)</h2>
         <p class="text-sm text-slate-400">Alle gespeicherten Texte in der Datenbank.</p>
       </div>
+      <div class="flex items-center gap-2">
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+          (click)="loadTexts()"
+          [disabled]="isLoading"
+        >
+          Neu laden
+        </button>
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+          (click)="exportCsv()"
+          [disabled]="exportLoading"
+        >
+          CSV Export
+        </button>
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+          (click)="loadCleanupSuggestions()"
+          [disabled]="cleanupLoading"
+        >
+          Cleanup Vorschläge
+        </button>
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-rose-600/80 hover:bg-rose-600"
+          (click)="bulkDeleteSelected()"
+          [disabled]="selectedIds.size === 0"
+        >
+          Auswahl löschen ({{ selectedIds.size }})
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Suche</label>
+        <input
+          type="text"
+          [(ngModel)]="searchTerm"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+          placeholder="Name oder Inhalt"
+        />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Suchbereich</label>
+        <select
+          [(ngModel)]="searchScope"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        >
+          <option value="both">Name + Inhalt</option>
+          <option value="name">Nur Name</option>
+          <option value="content">Nur Inhalt</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Tag Filter</label>
+        <input
+          type="text"
+          [(ngModel)]="tagFilter"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+          placeholder="z.B. wichtig"
+        />
+      </div>
+    </div>
+
+    <div class="admin-filter-actions flex flex-wrap items-center gap-2">
       <button
-        class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
-        (click)="loadTexts()"
-        [disabled]="isLoading"
+        class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+        (click)="clearFilters()"
       >
-        Neu laden
+        Filter zurücksetzen
+      </button>
+      <button
+        class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+        (click)="toggleSelectAll()"
+      >
+        {{ selectedIds.size === texts.length ? 'Auswahl löschen' : 'Alle auswählen' }}
       </button>
     </div>
+
+    @if (cleanup) {
+      <div class="flex flex-wrap items-center gap-2 text-xs text-slate-300">
+        <span>Cleanup:</span>
+        <button class="px-2 py-1 rounded bg-slate-800" (click)="selectUnused()">
+          Ungenutzt ({{ cleanup.unusedIds.length }})
+        </button>
+        <button class="px-2 py-1 rounded bg-slate-800" (click)="selectEmpty()">
+          Leer ({{ cleanup.emptyIds.length }})
+        </button>
+        <button class="px-2 py-1 rounded bg-slate-800" (click)="selectDuplicates()">
+          Duplikate ({{ cleanup.duplicateGroups.length }})
+        </button>
+      </div>
+    }
+
+    @if (infoMessage) {
+      <div class="text-sm text-emerald-400">{{ infoMessage }}</div>
+    }
 
     @if (errorMessage) {
       <div class="text-sm text-rose-400">{{ errorMessage }}</div>
@@ -31,13 +123,61 @@
     @for (text of texts; track text.id) {
       <div class="border border-slate-800 rounded-2xl p-4 bg-slate-900/60">
         <div class="flex items-start justify-between gap-4">
-          <div class="flex-1">
-            <div class="text-sm text-slate-400">
-              #{{ text.id }} · {{ formatTimestamp(text.created_at) }}
-            </div>
-            <div class="text-base font-semibold">{{ text.name }}</div>
-            <div class="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
-              {{ previewContent(text.content) }}
+          <div class="flex items-start gap-3">
+            <input
+              type="checkbox"
+              class="mt-1"
+              [checked]="isSelected(text.id)"
+              (change)="toggleSelect(text.id)"
+            />
+            <div class="flex-1">
+              <div class="text-sm text-slate-400">
+                #{{ text.id }} · {{ formatTimestamp(text.created_at) }}
+              </div>
+              <div class="text-base font-semibold">{{ text.name }}</div>
+              <div class="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
+                {{ previewContent(text.content) }}
+              </div>
+
+              <div class="mt-3 text-xs text-slate-400 flex flex-wrap items-center gap-2">
+                @if (text.usedInHistory) {
+                  <span class="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300">
+                    In Analyse
+                  </span>
+                  <span>Runs:</span>
+                  @for (runId of text.historyRunIds; track runId) {
+                    <a
+                      class="underline text-slate-300 hover:text-white"
+                      [routerLink]="['/dashboard']"
+                      [queryParams]="{ runId: runId }"
+                    >
+                      #{{ runId }}
+                    </a>
+                  }
+                } @else {
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300">
+                    Nicht verwendet
+                  </span>
+                }
+              </div>
+
+              <div class="mt-4">
+                <label class="block text-xs text-slate-400 mb-1">Tags (kommagetrennt)</label>
+                <div class="flex items-center gap-2">
+                  <input
+                    type="text"
+                    [(ngModel)]="tagDrafts[text.id]"
+                    class="flex-1 rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                    placeholder="z.B. wichtig, review"
+                  />
+                  <button
+                    class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
+                    (click)="saveTags(text)"
+                  >
+                    Speichern
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
           <button

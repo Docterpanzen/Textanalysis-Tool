@@ -40,3 +40,9 @@ def ensure_sqlite_columns():
         if "wordcloud_png" not in column_names:
             conn.execute(text("ALTER TABLE clusters ADD COLUMN wordcloud_png TEXT"))
             conn.commit()
+
+        text_columns = conn.execute(text("PRAGMA table_info(texts)")).fetchall()
+        text_column_names = {row[1] for row in text_columns}
+        if "tags" not in text_column_names:
+            conn.execute(text("ALTER TABLE texts ADD COLUMN tags TEXT"))
+            conn.commit()

@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
   AnalysisRunDetail,
   AnalysisRunSummary,
@@ -29,13 +29,22 @@ export class Dashboard implements OnInit {
   sortOrder: 'asc' | 'desc' = 'desc';
   openHistoryTextId: number | null = null;
   activeWordcloud: string | null = null;
+  pendingRunId: number | null = null;
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private historyApi: HistoryApiService,
   ) {}
 
   ngOnInit(): void {
+    this.route.queryParamMap.subscribe((params) => {
+      const raw = params.get('runId');
+      const parsed = raw ? Number(raw) : NaN;
+      if (!Number.isNaN(parsed)) {
+        this.pendingRunId = parsed;
+      }
+    });
     this.loadHistory();
   }
 
@@ -135,6 +144,13 @@ export class Dashboard implements OnInit {
         this.historyOverview = res;
         this.historyRuns = res.runs ?? [];
         this.historyLoading = false;
+
+        if (this.pendingRunId) {
+          const runId = this.pendingRunId;
+          this.pendingRunId = null;
+          this.selectedRunId = runId;
+          this.loadRunDetail(runId);
+        }
 
         const hasSelection =
           this.selectedRunId !== null &&

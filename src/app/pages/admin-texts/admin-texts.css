@@ -23,3 +23,8 @@
   min-height: 0;
   padding-right: 0.25rem;
 }
+
+.admin-filter-actions {
+  margin-top: 0.5rem;
+  gap: 0.5rem;
+}
