@@ -1,0 +1,25 @@
+.admin-texts {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 1rem;
+}
+
+.admin-texts-header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: rgba(2, 6, 23, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.admin-texts-list {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+  padding-right: 0.25rem;
+}

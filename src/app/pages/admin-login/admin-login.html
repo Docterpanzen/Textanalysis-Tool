@@ -1,0 +1,46 @@
+<div class="admin-login-page">
+  <div class="admin-login-bg">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+  </div>
+
+  <div class="admin-login-card">
+    <div class="admin-login-title">
+      <h1 class="text-xl font-semibold">Admin Login</h1>
+      <p class="text-sm text-slate-400">Geschützter Bereich</p>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1">Benutzername</label>
+        <input
+          type="text"
+          [(ngModel)]="username"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-1">Passwort</label>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+      </div>
+
+      <button
+        class="w-full rounded-xl bg-indigo-600 hover:bg-indigo-500 px-3 py-2 text-sm font-medium admin-login-button"
+        [disabled]="isLoading"
+        (click)="login()"
+      >
+        {{ isLoading ? 'Anmelden...' : 'Anmelden' }}
+      </button>
+
+      @if (errorMessage) {
+        <div class="text-sm text-rose-400">{{ errorMessage }}</div>
+      }
+    </div>
+  </div>
+</div>

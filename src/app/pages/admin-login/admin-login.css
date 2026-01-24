@@ -1,0 +1,96 @@
+.admin-login-page {
+  position: relative;
+  min-height: calc(100vh - 80px);
+  display: grid;
+  place-items: center;
+  padding: 3rem 1.5rem;
+  overflow: hidden;
+}
+
+.admin-login-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top, rgba(79, 70, 229, 0.15), transparent 45%),
+    radial-gradient(circle at bottom, rgba(14, 165, 233, 0.12), transparent 45%);
+}
+
+.orb {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 999px;
+  filter: blur(20px);
+  opacity: 0.6;
+  animation: float 14s ease-in-out infinite;
+}
+
+.orb-a {
+  top: -60px;
+  left: -40px;
+  background: radial-gradient(circle, rgba(79, 70, 229, 0.6), transparent 70%);
+}
+
+.orb-b {
+  bottom: -80px;
+  right: -60px;
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.5), transparent 70%);
+  animation-delay: -5s;
+}
+
+.orb-c {
+  top: 20%;
+  right: 15%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.35), transparent 70%);
+  animation-delay: -9s;
+}
+
+.admin-login-card {
+  position: relative;
+  width: min(420px, 100%);
+  padding: 2rem;
+  border-radius: 1.25rem;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.7));
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(14px);
+  animation: rise 0.6s ease-out;
+}
+
+.admin-login-title {
+  margin-bottom: 1.5rem;
+}
+
+.admin-login-button {
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.admin-login-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.35);
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(18px) translateX(12px);
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
