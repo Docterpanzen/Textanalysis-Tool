@@ -97,6 +97,22 @@ export class AdminRuns implements OnInit {
     this.updateRunTags(run, merged);
   }
 
+  deleteRun(run: AdminRunRecord) {
+    if (!confirm(`Run #${run.id} wirklich löschen?`)) {
+      return;
+    }
+
+    this.api.deleteRun(run.id).subscribe({
+      next: () => {
+        this.runs = this.runs.filter((r) => r.id !== run.id);
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Run konnte nicht gelöscht werden.';
+      },
+    });
+  }
+
   removeTag(run: AdminRunRecord, tag: string) {
     const tags = (run.tags ?? []).filter((t) => t !== tag);
     this.updateRunTags(run, tags);

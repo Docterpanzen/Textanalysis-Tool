@@ -141,6 +141,12 @@ export class AdminApiService {
     );
   }
 
+  deleteRun(runId: number): Observable<void> {
+    return this.http.delete<void>(`${BASE_URL}/admin/runs/${runId}`, {
+      headers: this.authHeaders(),
+    });
+  }
+
   logout() {
     this.session.clear();
   }

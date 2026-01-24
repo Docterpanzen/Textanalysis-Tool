@@ -130,13 +130,21 @@
               </div>
             </div>
           </div>
-          <a
-            class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
-            [routerLink]="['/dashboard']"
-            [queryParams]="{ runId: run.id }"
-          >
-            Öffnen
-          </a>
+          <div class="flex items-center gap-2">
+            <a
+              class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
+              [routerLink]="['/dashboard']"
+              [queryParams]="{ runId: run.id }"
+            >
+              Öffnen
+            </a>
+            <button
+              class="text-xs px-3 py-2 rounded-lg bg-rose-600/80 hover:bg-rose-600"
+              (click)="deleteRun(run)"
+            >
+              Löschen
+            </button>
+          </div>
         </div>
       </div>
     }

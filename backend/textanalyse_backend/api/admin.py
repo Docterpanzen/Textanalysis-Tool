@@ -32,7 +32,12 @@ from ..services.admin_texts import (
     parse_tags,
     update_text_tags,
 )
-from ..services.admin_runs import list_admin_runs, parse_tags as parse_run_tags, update_run_tags
+from ..services.admin_runs import (
+    delete_run,
+    list_admin_runs,
+    parse_tags as parse_run_tags,
+    update_run_tags,
+)
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -270,3 +275,20 @@ def admin_update_run_tags(
         clusterCount=cluster_count or 0,
         tags=tags,
     )
+
+
+@router.delete("/runs/{run_id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_run(
+    run_id: int,
+    db: Session = Depends(get_db),
+    _: str = Depends(require_admin),
+) -> Response:
+    try:
+        delete_run(db, run_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Run {run_id} not found.",
+        )
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

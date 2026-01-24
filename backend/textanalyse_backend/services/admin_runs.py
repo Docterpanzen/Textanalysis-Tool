@@ -53,6 +53,14 @@ def update_run_tags(db: Session, run_id: int, tags: Iterable[str]) -> List[str]:
     return normalized
 
 
+def delete_run(db: Session, run_id: int) -> None:
+    run = db.query(models.AnalysisRun).filter(models.AnalysisRun.id == run_id).first()
+    if not run:
+        raise ValueError("not_found")
+    db.delete(run)
+    db.commit()
+
+
 def list_admin_runs(
     db: Session,
     sort: str = "desc",
