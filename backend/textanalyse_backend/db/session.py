@@ -46,3 +46,9 @@ def ensure_sqlite_columns():
         if "tags" not in text_column_names:
             conn.execute(text("ALTER TABLE texts ADD COLUMN tags TEXT"))
             conn.commit()
+
+        run_columns = conn.execute(text("PRAGMA table_info(analysis_runs)")).fetchall()
+        run_column_names = {row[1] for row in run_columns}
+        if "tags" not in run_column_names:
+            conn.execute(text("ALTER TABLE analysis_runs ADD COLUMN tags TEXT"))
+            conn.commit()

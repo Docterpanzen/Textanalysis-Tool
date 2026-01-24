@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import csv
 import io
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import distinct, func
 from sqlalchemy.orm import Session
 
 from ..db import models
@@ -15,6 +17,8 @@ from ..schemas.admin import (
     AdminCleanupSuggestions,
     AdminLoginRequest,
     AdminLoginResponse,
+    AdminRunRead,
+    AdminRunUpdateTagsRequest,
     AdminTextRead,
     AdminUpdateTagsRequest,
 )
@@ -28,6 +32,7 @@ from ..services.admin_texts import (
     parse_tags,
     update_text_tags,
 )
+from ..services.admin_runs import list_admin_runs, parse_tags as parse_run_tags, update_run_tags
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -187,4 +192,81 @@ def admin_export_csv(
         content=output.getvalue(),
         media_type="text/csv",
         headers=headers,
+    )
+
+
+@router.get("/runs", response_model=List[AdminRunRead])
+def admin_list_runs(
+    db: Session = Depends(get_db),
+    _: str = Depends(require_admin),
+    sort: str = Query("desc", pattern="^(asc|desc)$"),
+    tag: Optional[str] = Query(None),
+    start: Optional[datetime] = Query(None),
+    end: Optional[datetime] = Query(None),
+) -> List[AdminRunRead]:
+    if bool(start) ^ bool(end):
+        start = None
+        end = None
+
+    rows = list_admin_runs(db, sort=sort, tag=tag, start=start, end=end)
+    return [
+        AdminRunRead(
+            id=run.id,
+            created_at=run.created_at,
+            vectorizer=run.vectorizer,
+            numClusters=run.num_clusters,
+            useDimReduction=run.use_dim_reduction,
+            numComponents=run.num_components,
+            textCount=text_count or 0,
+            clusterCount=cluster_count or 0,
+            tags=parse_run_tags(run.tags),
+        )
+        for run, text_count, cluster_count in rows
+    ]
+
+
+@router.patch("/runs/{run_id}/tags", response_model=AdminRunRead)
+def admin_update_run_tags(
+    run_id: int,
+    payload: AdminRunUpdateTagsRequest,
+    db: Session = Depends(get_db),
+    _: str = Depends(require_admin),
+) -> AdminRunRead:
+    try:
+        tags = update_run_tags(db, run_id, payload.tags)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Run {run_id} not found.",
+        )
+
+    row = (
+        db.query(
+            models.AnalysisRun,
+            func.count(distinct(models.AnalysisRunText.text_id)).label("text_count"),
+            func.count(distinct(models.Cluster.id)).label("cluster_count"),
+        )
+        .outerjoin(
+            models.AnalysisRunText,
+            models.AnalysisRunText.analysis_run_id == models.AnalysisRun.id,
+        )
+        .outerjoin(models.Cluster, models.Cluster.analysis_run_id == models.AnalysisRun.id)
+        .filter(models.AnalysisRun.id == run_id)
+        .group_by(models.AnalysisRun.id)
+        .first()
+    )
+    if not row:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Run not found.")
+
+    run, text_count, cluster_count = row
+    return AdminRunRead(
+        id=run.id,
+        created_at=run.created_at,
+        vectorizer=run.vectorizer,
+        numClusters=run.num_clusters,
+        useDimReduction=run.use_dim_reduction,
+        numComponents=run.num_components,
+        textCount=text_count or 0,
+        clusterCount=cluster_count or 0,
+        tags=tags,
     )

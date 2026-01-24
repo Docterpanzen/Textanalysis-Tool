@@ -47,6 +47,7 @@ class AnalysisRun(Base):
     num_components = Column(Integer, nullable=True)
     language = Column(String(5), nullable=True)              # z.B. "de", "en"
     description = Column(SAText, nullable=True)
+    tags = Column(SAText, nullable=True)
 
     # Beziehungen
     texts = relationship(

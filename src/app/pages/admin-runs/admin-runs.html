@@ -1,0 +1,144 @@
+<div class="admin-runs">
+  <div class="admin-runs-header">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <h2 class="text-xl font-semibold">Runs (Admin)</h2>
+        <p class="text-sm text-slate-400">Analyse-Runs verwalten und taggen.</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+          (click)="loadRuns()"
+          [disabled]="isLoading"
+        >
+          Neu laden
+        </button>
+        <button
+          class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+          (click)="toggleSortOrder()"
+        >
+          Sort: {{ sortOrder === 'desc' ? 'Neu → Alt' : 'Alt → Neu' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Tag Filter</label>
+        <input
+          type="text"
+          [(ngModel)]="tagFilter"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+          placeholder="z.B. review"
+        />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Startdatum</label>
+        <input
+          type="date"
+          [(ngModel)]="startDate"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">Enddatum</label>
+        <input
+          type="date"
+          [(ngModel)]="endDate"
+          (ngModelChange)="onFilterChange()"
+          class="w-full rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+        />
+      </div>
+    </div>
+
+    <div class="admin-run-actions flex flex-wrap items-center gap-2">
+      <button
+        class="text-xs px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+        (click)="clearFilters()"
+      >
+        Filter zurücksetzen
+      </button>
+      @if (startDate && !endDate) {
+        <span class="text-xs text-slate-400">Zeitraum nur bei Start + Ende aktiv.</span>
+      }
+      @if (!startDate && endDate) {
+        <span class="text-xs text-slate-400">Zeitraum nur bei Start + Ende aktiv.</span>
+      }
+    </div>
+
+    @if (errorMessage) {
+      <div class="text-sm text-rose-400">{{ errorMessage }}</div>
+    }
+
+    @if (isLoading) {
+      <div class="text-sm text-slate-400">Lade Runs…</div>
+    }
+
+    @if (!isLoading && runs.length === 0) {
+      <div class="text-sm text-slate-400">Keine Runs vorhanden.</div>
+    }
+  </div>
+
+  <div class="admin-runs-list space-y-3">
+    @for (run of runs; track run.id) {
+      <div class="border border-slate-800 rounded-2xl p-4 bg-slate-900/60">
+        <div class="flex items-start justify-between gap-4">
+          <div class="flex-1">
+            <div class="text-sm text-slate-400">
+              #{{ run.id }} · {{ formatTimestamp(run.created_at) }}
+            </div>
+            <div class="text-base font-semibold admin-title-row">
+              <span>{{ run.vectorizer }}</span>
+              <div class="admin-tag-list">
+                @for (tag of run.tags; track tag) {
+                  <span class="admin-tag-chip">
+                    <span>{{ tag }}</span>
+                    <button type="button" class="admin-tag-remove" (click)="removeTag(run, tag)">
+                      ×
+                    </button>
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="text-sm text-slate-300 mt-2">
+              Cluster: {{ run.numClusters }} · Texte: {{ run.textCount }} · Cluster-Objekte:
+              {{ run.clusterCount }}
+            </div>
+            <div class="text-xs text-slate-400 mt-2">
+              DimRed: {{ run.useDimReduction ? 'Ja' : 'Nein' }} · Komponenten:
+              {{ run.numComponents ?? '-' }}
+            </div>
+
+            <div class="mt-4">
+              <label class="block text-xs text-slate-400 mb-1">Tags (kommagetrennt)</label>
+              <div class="flex items-center gap-2">
+                <input
+                  type="text"
+                  [(ngModel)]="tagDrafts[run.id]"
+                  (keydown.enter)="saveTags(run)"
+                  class="flex-1 rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
+                  placeholder="Tag hinzufügen"
+                />
+                <button
+                  class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
+                  (click)="saveTags(run)"
+                >
+                  Speichern
+                </button>
+              </div>
+            </div>
+          </div>
+          <a
+            class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
+            [routerLink]="['/dashboard']"
+            [queryParams]="{ runId: run.id }"
+          >
+            Öffnen
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+</div>

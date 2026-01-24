@@ -158,21 +158,15 @@ export class AdminTexts implements OnInit {
 
   saveTags(text: AdminTextRecord) {
     const raw = this.tagDrafts[text.id] ?? '';
-    const tags = raw
-      .split(',')
-      .map((t) => t.trim())
-      .filter(Boolean);
+    const newTags = this.parseInputTags(raw);
+    if (newTags.length === 0) return;
+    const merged = this.mergeTags(text.tags ?? [], newTags);
+    this.updateTextTags(text, merged);
+  }
 
-    this.api.updateTags(text.id, tags).subscribe({
-      next: (updated) => {
-        text.tags = updated.tags;
-        this.tagDrafts[text.id] = updated.tags.join(', ');
-      },
-      error: (err) => {
-        console.error(err);
-        this.errorMessage = 'Tags konnten nicht gespeichert werden.';
-      },
-    });
+  removeTag(text: AdminTextRecord, tag: string) {
+    const tags = (text.tags ?? []).filter((t) => t !== tag);
+    this.updateTextTags(text, tags);
   }
 
   loadCleanupSuggestions() {
@@ -255,8 +249,45 @@ export class AdminTexts implements OnInit {
   private seedTagDrafts() {
     this.tagDrafts = {};
     for (const text of this.texts) {
-      this.tagDrafts[text.id] = (text.tags ?? []).join(', ');
+      this.tagDrafts[text.id] = '';
     }
+  }
+
+  private updateTextTags(text: AdminTextRecord, tags: string[]) {
+    this.api.updateTags(text.id, tags).subscribe({
+      next: (updated) => {
+        text.tags = updated.tags;
+        this.tagDrafts[text.id] = '';
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorMessage = 'Tags konnten nicht gespeichert werden.';
+      },
+    });
+  }
+
+  private parseInputTags(raw: string): string[] {
+    const value = raw.trim();
+    if (!value) return [];
+    if (value.includes(',')) {
+      return value
+        .split(',')
+        .map((t) => t.trim())
+        .filter(Boolean);
+    }
+    return [value];
+  }
+
+  private mergeTags(existing: string[], incoming: string[]): string[] {
+    const seen = new Set(existing.map((t) => t.toLowerCase()));
+    const merged = [...existing];
+    for (const tag of incoming) {
+      const lower = tag.toLowerCase();
+      if (seen.has(lower)) continue;
+      seen.add(lower);
+      merged.push(tag);
+    }
+    return merged;
   }
 
   formatTimestamp(value?: string | null): string {

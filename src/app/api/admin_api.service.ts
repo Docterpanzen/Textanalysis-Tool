@@ -33,6 +33,18 @@ export interface AdminCleanupSuggestions {
   duplicateGroups: number[][];
 }
 
+export interface AdminRunRecord {
+  id: number;
+  created_at: string;
+  vectorizer: string;
+  numClusters: number;
+  useDimReduction: boolean;
+  numComponents?: number | null;
+  textCount: number;
+  clusterCount: number;
+  tags: string[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminApiService {
   constructor(
@@ -99,6 +111,34 @@ export class AdminApiService {
       headers: this.authHeaders(),
       responseType: 'blob',
     });
+  }
+
+  listRuns(params?: {
+    sort?: 'asc' | 'desc';
+    tag?: string;
+    start?: string;
+    end?: string;
+  }): Observable<AdminRunRecord[]> {
+    let httpParams = new HttpParams();
+    if (params?.sort) httpParams = httpParams.set('sort', params.sort);
+    if (params?.tag) httpParams = httpParams.set('tag', params.tag);
+    if (params?.start) httpParams = httpParams.set('start', params.start);
+    if (params?.end) httpParams = httpParams.set('end', params.end);
+
+    return this.http.get<AdminRunRecord[]>(`${BASE_URL}/admin/runs`, {
+      headers: this.authHeaders(),
+      params: httpParams,
+    });
+  }
+
+  updateRunTags(runId: number, tags: string[]): Observable<AdminRunRecord> {
+    return this.http.patch<AdminRunRecord>(
+      `${BASE_URL}/admin/runs/${runId}/tags`,
+      { tags },
+      {
+        headers: this.authHeaders(),
+      },
+    );
   }
 
   logout() {

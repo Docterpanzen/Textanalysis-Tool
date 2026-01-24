@@ -134,7 +134,19 @@
               <div class="text-sm text-slate-400">
                 #{{ text.id }} · {{ formatTimestamp(text.created_at) }}
               </div>
-              <div class="text-base font-semibold">{{ text.name }}</div>
+              <div class="text-base font-semibold admin-title-row">
+                <span>{{ text.name }}</span>
+                <div class="admin-tag-list">
+                  @for (tag of text.tags; track tag) {
+                    <span class="admin-tag-chip">
+                      <span>{{ tag }}</span>
+                      <button type="button" class="admin-tag-remove" (click)="removeTag(text, tag)">
+                        ×
+                      </button>
+                    </span>
+                  }
+                </div>
+              </div>
               <div class="text-sm text-slate-300 mt-2 whitespace-pre-wrap">
                 {{ previewContent(text.content) }}
               </div>
@@ -167,8 +179,9 @@
                   <input
                     type="text"
                     [(ngModel)]="tagDrafts[text.id]"
+                    (keydown.enter)="saveTags(text)"
                     class="flex-1 rounded-xl bg-slate-950/80 border border-slate-700 px-3 py-2 text-sm text-slate-100"
-                    placeholder="z.B. wichtig, review"
+                    placeholder="Tag hinzufügen"
                   />
                   <button
                     class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"

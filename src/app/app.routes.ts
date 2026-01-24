@@ -3,6 +3,7 @@ import { adminAuthGuard } from './guards/admin-auth.guard';
 import { AdminShell } from './layout/admin-shell/admin-shell';
 import { Shell } from './layout/shell/shell';
 import { AdminLogin } from './pages/admin-login/admin-login';
+import { AdminRuns } from './pages/admin-runs/admin-runs';
 import { AdminTexts } from './pages/admin-texts/admin-texts';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Documentation } from './pages/documentation/documentation';
@@ -27,6 +28,7 @@ export const routes: Routes = [
         children: [
           { path: 'login', component: AdminLogin },
           { path: 'texts', component: AdminTexts },
+          { path: 'runs', component: AdminRuns },
           { path: '', redirectTo: 'texts', pathMatch: 'full' },
         ],
       },

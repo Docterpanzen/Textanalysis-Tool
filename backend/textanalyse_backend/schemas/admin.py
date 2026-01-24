@@ -50,3 +50,19 @@ class AdminExportRow(BaseModel):
     tags: Optional[str]
     created_at: datetime
     usedInHistory: bool
+
+
+class AdminRunRead(BaseModel):
+    id: int
+    created_at: datetime
+    vectorizer: str
+    numClusters: int
+    useDimReduction: bool
+    numComponents: Optional[int]
+    textCount: int
+    clusterCount: int
+    tags: List[str]
+
+
+class AdminRunUpdateTagsRequest(BaseModel):
+    tags: List[str]
