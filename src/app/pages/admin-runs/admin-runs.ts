@@ -15,6 +15,7 @@ export class AdminRuns implements OnInit {
   runs: AdminRunRecord[] = [];
   isLoading = false;
   errorMessage: string | null = null;
+  infoMessage: string | null = null;
 
   sortOrder: 'asc' | 'desc' = 'desc';
   tagFilter = '';
@@ -33,6 +34,7 @@ export class AdminRuns implements OnInit {
   loadRuns() {
     this.isLoading = true;
     this.errorMessage = null;
+    this.infoMessage = null;
 
     const params: {
       sort?: 'asc' | 'desc';
@@ -105,6 +107,7 @@ export class AdminRuns implements OnInit {
     this.api.deleteRun(run.id).subscribe({
       next: () => {
         this.runs = this.runs.filter((r) => r.id !== run.id);
+        this.infoMessage = `Run #${run.id} gelöscht.`;
       },
       error: (err) => {
         console.error(err);

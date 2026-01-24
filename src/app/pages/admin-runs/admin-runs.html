@@ -72,6 +72,10 @@
       <div class="text-sm text-rose-400">{{ errorMessage }}</div>
     }
 
+    @if (infoMessage) {
+      <div class="text-sm text-emerald-400">{{ infoMessage }}</div>
+    }
+
     @if (isLoading) {
       <div class="text-sm text-slate-400">Lade Runs…</div>
     }
