@@ -8,6 +8,8 @@ from .api.textanalyse import router as textanalyse_router
 from .api.texts import router as texts_router
 from .api.plagiarism import router as plagiarism_router
 from .api.history import router as history_router
+from .api.dashboard import router as dashboard_router
+from .api.admin import router as admin_router
 from .config import settings
 
 from .db.session import engine, ensure_sqlite_columns
@@ -58,5 +60,7 @@ app.include_router(textanalyse_router)
 app.include_router(texts_router) 
 app.include_router(plagiarism_router)
 app.include_router(history_router)
+app.include_router(admin_router)
+app.include_router(dashboard_router)
 
 logger.info("Textanalyse Backend gestartet")

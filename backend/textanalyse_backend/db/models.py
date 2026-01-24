@@ -20,6 +20,7 @@ class Text(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(255), nullable=False)
     content = Column(SAText, nullable=False)
+    tags = Column(SAText, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Beziehungen
@@ -46,6 +47,7 @@ class AnalysisRun(Base):
     num_components = Column(Integer, nullable=True)
     language = Column(String(5), nullable=True)              # z.B. "de", "en"
     description = Column(SAText, nullable=True)
+    tags = Column(SAText, nullable=True)
 
     # Beziehungen
     texts = relationship(

@@ -16,37 +16,125 @@
 
   <!-- Analyse-Historie -->
   <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
-    <div class="flex flex-wrap items-start justify-between gap-4">
+    <div class="dashboard-kpi-header">
       <div>
-        <h2 class="text-sm font-medium text-slate-200">Analyse-Historie</h2>
-        <p class="mt-1 text-xs text-slate-500">Letzte Analysen, Details per Klick.</p>
+        <h2 class="text-sm font-medium text-slate-200">Dashboard KPIs</h2>
+        <p class="mt-1 text-xs text-slate-500">Kennzahlen nach Zeitraum.</p>
+      </div>
+      <div class="dashboard-range-controls">
+        <div class="dashboard-range-card">
+          <span class="text-xs text-slate-400">Zeitraum</span>
+          <span class="text-sm font-semibold text-slate-100">{{ activeRangeLabel }}</span>
+        </div>
+        <div class="dashboard-dots">
+          @for (range of timeRanges; track range.id; let idx = $index) {
+            <button
+              class="dashboard-dot"
+              [class.active]="idx === activeRangeIndex"
+              (click)="setRange(idx)"
+            ></button>
+          }
+        </div>
+        <div class="dashboard-range-nav">
+          <button
+            class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
+            (click)="prevRange()"
+          >
+            ◀
+          </button>
+          <button
+            class="text-xs px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700"
+            (click)="nextRange()"
+          >
+            ▶
+          </button>
+        </div>
       </div>
     </div>
 
+    @if (metricsError) {
+      <p class="text-xs text-rose-400">{{ metricsError }}</p>
+    }
+
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <div class="rounded-md border border-slate-800 bg-slate-950/60 p-3">
-        <p class="text-xs text-slate-500">Jobs insgesamt</p>
+        <p class="text-xs text-slate-500">Runs</p>
         <p class="mt-1 text-2xl font-semibold text-slate-100">
-          {{ historyOverview?.totalRuns ?? 0 }}
+          {{ metrics?.totalRuns ?? 0 }}
         </p>
       </div>
       <div class="rounded-md border border-slate-800 bg-slate-950/60 p-3">
-        <p class="text-xs text-slate-500">Heute</p>
+        <p class="text-xs text-slate-500">Texte (distinct)</p>
         <p class="mt-1 text-2xl font-semibold text-slate-100">
-          {{ historyOverview?.todayRuns ?? 0 }}
-        </p>
-      </div>
-      <div class="rounded-md border border-slate-800 bg-slate-950/60 p-3">
-        <p class="text-xs text-slate-500">Letzter Job</p>
-        <p class="mt-1 text-sm font-semibold text-slate-100">
-          {{ latestRunLabel }}
+          {{ metrics?.totalTexts ?? 0 }}
         </p>
       </div>
       <div class="rounded-md border border-slate-800 bg-slate-950/60 p-3">
         <p class="text-xs text-slate-500">Ø Texte pro Run</p>
         <p class="mt-1 text-2xl font-semibold text-slate-100">
-          {{ averageTextsPerRun }}
+          {{ metrics?.avgTextsPerRun?.toFixed(1) ?? '0.0' }}
         </p>
+      </div>
+      <div class="rounded-md border border-slate-800 bg-slate-950/60 p-3">
+        <p class="text-xs text-slate-500">Ø Cluster pro Run</p>
+        <p class="mt-1 text-2xl font-semibold text-slate-100">
+          {{ metrics?.avgClustersPerRun?.toFixed(1) ?? '0.0' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="grid gap-4 lg:grid-cols-3">
+      <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-3 lg:col-span-2">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-medium text-slate-200">Verlauf</h3>
+          <span class="text-[11px] text-slate-500">Runs pro Tag</span>
+        </div>
+        <div class="dashboard-chart">
+          @if (metrics) {
+            @for (point of metrics.runSeries; track point.date) {
+              <div class="dashboard-bar">
+                <div
+                  class="dashboard-bar-fill"
+                  [style.height.%]="(point.count / runSeriesMax) * 100"
+                ></div>
+                <span class="dashboard-bar-label">{{ point.count }}</span>
+              </div>
+            }
+          }
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-3 space-y-3">
+        <div>
+          <h3 class="text-xs font-medium text-slate-200">Quick Insights</h3>
+          <div class="mt-2 text-xs text-slate-400 space-y-1">
+            <div>Vectorizer: {{ metrics?.insights?.mostCommonVectorizer ?? '-' }}</div>
+            <div>Häufigstes k: {{ metrics?.insights?.mostCommonClusterCount ?? '-' }}</div>
+          </div>
+          <div class="mt-2 flex flex-wrap gap-2">
+            @for (term of metrics?.insights?.topTerms ?? []; track term) {
+              <span class="dashboard-pill">{{ term }}</span>
+            }
+          </div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-medium text-slate-200">Qualität</h3>
+          <div class="mt-2 text-xs text-slate-400 space-y-1">
+            <div>Leere Texte: {{ metrics?.quality?.emptyTextCount ?? 0 }}</div>
+            <div>Ø Textlänge: {{ avgTextLengthLabel }} Zeichen</div>
+            <div>Singleton-Cluster: {{ singletonClusterRateLabel }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="my-6 rounded-2xl border border-slate-800 bg-slate-900/40 p-4 space-y-4">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <h2 class="text-sm font-medium text-slate-200">Analyse-Historie</h2>
+        <p class="mt-1 text-xs text-slate-500">Letzte Analysen, Details per Klick.</p>
       </div>
     </div>
 
@@ -73,17 +161,9 @@
               aria-label="Sortierung umschalten"
             >
               @if (sortOrder === 'asc') {
-                <img
-                  src="assets/Input/arrow_up_white_icon.svg"
-                  alt=""
-                  class="mx-auto h-4 w-4"
-                />
+                <img src="assets/Input/arrow_up_white_icon.svg" alt="" class="mx-auto h-4 w-4" />
               } @else {
-                <img
-                  src="assets/Input/arrow_down_white_icon.svg"
-                  alt=""
-                  class="mx-auto h-4 w-4"
-                />
+                <img src="assets/Input/arrow_down_white_icon.svg" alt="" class="mx-auto h-4 w-4" />
               }
             </button>
           </label>
@@ -160,23 +240,33 @@
                 </div>
                 <div class="flex items-center justify-between">
                   <span>Max Features</span>
-                  <span class="text-slate-200">{{ formatOption(selectedRun.options.maxFeatures) }}</span>
+                  <span class="text-slate-200">{{
+                    formatOption(selectedRun.options.maxFeatures)
+                  }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span>Dim. Reduktion</span>
-                  <span class="text-slate-200">{{ formatOption(selectedRun.options.useDimReduction) }}</span>
+                  <span class="text-slate-200">{{
+                    formatOption(selectedRun.options.useDimReduction)
+                  }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span>Komponenten</span>
-                  <span class="text-slate-200">{{ formatOption(selectedRun.options.numComponents) }}</span>
+                  <span class="text-slate-200">{{
+                    formatOption(selectedRun.options.numComponents)
+                  }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span>Stopwords</span>
-                  <span class="text-slate-200">{{ formatOption(selectedRun.options.useStopwords) }}</span>
+                  <span class="text-slate-200">{{
+                    formatOption(selectedRun.options.useStopwords)
+                  }}</span>
                 </div>
                 <div class="flex items-center justify-between">
                   <span>Stopword-Modus</span>
-                  <span class="text-slate-200">{{ formatOption(selectedRun.options.stopwordMode) }}</span>
+                  <span class="text-slate-200">{{
+                    formatOption(selectedRun.options.stopwordMode)
+                  }}</span>
                 </div>
               </div>
             </div>
@@ -263,9 +353,8 @@
                       @if (openHistoryText?.id === text.id) {
                         <pre
                           class="mt-2 rounded-lg border border-slate-800 bg-slate-950/60 p-2 text-xs text-slate-100 whitespace-pre-wrap max-h-48 overflow-y-auto"
+                          >{{ text.content }}</pre
                         >
-{{ text.content }}
-                        </pre>
                       }
                     </li>
                   }

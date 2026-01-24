@@ -66,6 +66,34 @@ export interface HistoryQueryParams {
   offset?: number;
 }
 
+export interface DashboardSeriesPoint {
+  date: string;
+  count: number;
+}
+
+export interface DashboardInsights {
+  topTerms: string[];
+  mostCommonVectorizer?: string | null;
+  mostCommonClusterCount?: number | null;
+}
+
+export interface DashboardQuality {
+  emptyTextCount: number;
+  avgTextLength: number;
+  singletonClusterRate: number;
+}
+
+export interface DashboardMetrics {
+  totalRuns: number;
+  totalTexts: number;
+  avgTextsPerRun: number;
+  avgClustersPerRun: number;
+  latestRunAt?: string | null;
+  runSeries: DashboardSeriesPoint[];
+  insights: DashboardInsights;
+  quality: DashboardQuality;
+}
+
 @Injectable({ providedIn: 'root' })
 export class HistoryApiService {
   constructor(private http: HttpClient) {}
@@ -76,15 +104,22 @@ export class HistoryApiService {
     if (params.end) httpParams = httpParams.set('end', params.end);
     if (params.textIds) httpParams = httpParams.set('text_ids', params.textIds);
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
-    if (params.limit !== undefined)
-      httpParams = httpParams.set('limit', String(params.limit));
-    if (params.offset !== undefined)
-      httpParams = httpParams.set('offset', String(params.offset));
+    if (params.limit !== undefined) httpParams = httpParams.set('limit', String(params.limit));
+    if (params.offset !== undefined) httpParams = httpParams.set('offset', String(params.offset));
 
     return this.http.get<HistoryOverview>(`${BASE_URL}/history`, { params: httpParams });
   }
 
   getHistoryDetail(runId: number): Observable<AnalysisRunDetail> {
     return this.http.get<AnalysisRunDetail>(`${BASE_URL}/history/${runId}`);
+  }
+
+  getDashboardMetrics(params?: { start?: string; end?: string }): Observable<DashboardMetrics> {
+    let httpParams = new HttpParams();
+    if (params?.start) httpParams = httpParams.set('start', params.start);
+    if (params?.end) httpParams = httpParams.set('end', params.end);
+    return this.http.get<DashboardMetrics>(`${BASE_URL}/dashboard/metrics`, {
+      params: httpParams,
+    });
   }
 }

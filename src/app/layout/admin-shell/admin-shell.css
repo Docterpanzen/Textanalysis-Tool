@@ -1,0 +1,18 @@
+.admin-shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.admin-shell-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: rgba(2, 6, 23, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.admin-shell-main {
+  flex: 1;
+  min-height: 0;
+}

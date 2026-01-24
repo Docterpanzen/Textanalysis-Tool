@@ -1,0 +1,37 @@
+<div class="admin-shell min-h-screen bg-slate-950 text-slate-100">
+  <header
+    class="admin-shell-header px-6 py-4 border-b border-slate-800 flex items-center justify-between"
+  >
+    <div class="flex items-center gap-3">
+      <span class="text-lg font-semibold">Admin</span>
+      <nav class="flex items-center gap-2 text-sm text-slate-300">
+        <a
+          routerLink="/admin/texts"
+          routerLinkActive="text-white"
+          class="px-2 py-1 rounded hover:bg-slate-800"
+        >
+          Texte
+        </a>
+        <a
+          routerLink="/admin/runs"
+          routerLinkActive="text-white"
+          class="px-2 py-1 rounded hover:bg-slate-800"
+        >
+          Runs
+        </a>
+      </nav>
+    </div>
+    @if (isLoggedIn) {
+      <button
+        class="text-sm px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700"
+        (click)="logout()"
+      >
+        Logout
+      </button>
+    }
+  </header>
+
+  <main class="admin-shell-main p-6">
+    <router-outlet></router-outlet>
+  </main>
+</div>
